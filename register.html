@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account | EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-bone: #f4f1ea;
+        --bg-deep: #0e0e0e;
+        --text-dark: #1a1a1a;
+        --text-muted: #8e8e8e;
+        --accent-gold: #b38b4d;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --input-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    body, html {
+        height: 100%;
+        margin: 0;
+        background-color: var(--bg-deep);
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .auth-wrapper {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+    }
+
+    /* --- Left Visual Panel --- */
+    .auth-visual {
+        flex: 1.2;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 80px;
+    }
+
+    /* Using img tag for background effect */
+    .hero-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        filter: brightness(0.6);
+    }
+
+    .visual-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(14,14,14,0.1) 0%, rgba(14,14,14,0.9) 100%);
+        z-index: 2;
+    }
+
+    .visual-content {
+        position: relative;
+        z-index: 3;
+    }
+
+    .visual-content h2 {
+        font-family: 'Tenor Sans', serif;
+        color: #fff;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        line-height: 1.1;
+        margin: 0;
+    }
+
+    .visual-content span {
+        color: var(--accent-gold);
+        display: block;
+    }
+
+    /* --- Right Form Panel --- */
+    .auth-form-side {
+        flex: 0.8;
+        background-color: var(--bg-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        border-left: 1px solid var(--glass-border);
+        z-index: 4;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .auth-header h1 {
+        font-family: 'Tenor Sans', serif;
+        color: #fff;
+        font-size: 2.8rem;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .auth-header p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 40px;
+    }
+
+    /* --- Form Elements --- */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--accent-gold);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .form-group input, .form-group select {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--glass-border);
+        padding: 16px;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        transition: 0.3s;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+        outline: none;
+        border-color: var(--accent-gold);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Styling for the select options */
+    .form-group select option {
+        background-color: var(--bg-deep);
+        color: #fff;
+    }
+
+    .helptext {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    .required { color: #ff6b6b; }
+
+    .btn-auth {
+        width: 100%;
+        padding: 18px;
+        background: var(--accent-gold);
+        border: none;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.4s;
+        margin-bottom: 30px;
+    }
+
+    .btn-auth:hover {
+        background: #8a6a3a;
+        letter-spacing: 6px;
+    }
+
+    /* --- Role Links Section --- */
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .divider span {
+        padding: 0 15px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+    }
+
+    .role-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .role-links a {
+        padding: 12px;
+        border: 1px solid var(--glass-border);
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+        text-align: center;
+        border-radius: 4px;
+        transition: 0.3s;
+    }
+
+    .role-links a:hover {
+        border-color: var(--accent-gold);
+        background: rgba(179, 139, 77, 0.05);
+    }
+
+    /* --- Message & Error Styling --- */
+    .message, .form-errors {
+        padding: 12px;
+        font-size: 0.8rem;
+        border-left: 3px solid var(--accent-gold);
+        background: rgba(179, 139, 77, 0.1);
+        color: #fff;
+        margin-bottom: 20px;
+    }
+
+    .form-errors ul { margin: 0; padding-left: 15px; }
+
+    .auth-link {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .auth-link p { color: var(--text-muted); font-size: 0.85rem; }
+    .auth-link a { color: var(--accent-gold); text-decoration: none; font-weight: 600; }
+
+    @media (max-width: 991px) {
+        .auth-visual { display: none; }
+        .auth-form-side { flex: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    
+    <div class="auth-visual">
+        <img src="{% static 'images/register.jpg' %}" alt="Kerala Landscape" class="hero-img">
+        <div class="visual-overlay"></div>
+        <div class="visual-content">
+            <h2>Start Your<br><span>Ecological Journey</span></h2>
+        </div>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="auth-container">
+            
+            <header class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join Eco Heritage and begin your exploration</p>
+            </header>
+
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if form.errors %}
+            <div class="form-errors">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username">Username <span class="required">*</span></label>
+                    <input type="text" name="username" id="id_username" placeholder="Choose a username" required>
+                    <span class="helptext">150 chars or fewer. Letters, digits and @/./+/-/_ only.</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password1">Password <span class="required">*</span></label>
+                    <input type="password" name="password1" id="id_password1" placeholder="Create a password" required>
+                    <span class="helptext">Must contain at least 8 characters.</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password2">Confirm Password <span class="required">*</span></label>
+                    <input type="password" name="password2" id="id_password2" placeholder="Confirm your password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role <span class="required">*</span></label>
+                    <select name="role" id="role" required onchange="toggleRoleFields()">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="institution-field" style="display: none;">
+                    <label for="institution">Institution <span class="required">*</span></label>
+                    <select name="institution" id="institution">
+                        <option value="">Select Institution</option>
+                        {% for institution in institutions %}
+                        <option value="{{ institution.id }}">{{ institution.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group" id="class-field">
+                    <label for="student_class">Class</label>
+                    <select name="student_class" id="student_class">
+                        <option value="">Select Class (Optional)</option>
+                        {% for class in classes %}
+                        <option value="{{ class.id }}">{{ class.name }} ({{ class.institution.name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-auth">Create Account</button>
+            </form>
+
+            <div class="divider">
+                <span>Quick Register</span>
+            </div>
+
+            <div class="role-links">
+                <a href="{% url 'student_register' %}">👨‍🎓 Student</a>
+                <a href="{% url 'teacher_register' %}">👨‍🏫 Teacher</a>
+            </div>
+
+            <div class="auth-link">
+                <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleRoleFields() {
+        const role = document.getElementById('role').value;
+        const institutionField = document.getElementById('institution-field');
+        const classField = document.getElementById('class-field');
+        const institutionSelect = document.getElementById('institution');
+        
+        if (role === 'teacher') {
+            institutionField.style.display = 'block';
+            classField.style.display = 'none';
+            institutionSelect.required = true;
+        } else if (role === 'student') {
+            institutionField.style.display = 'none';
+            classField.style.display = 'block';
+            institutionSelect.required = false;
+        } else {
+            institutionField.style.display = 'none';
+            classField.style.display = 'none';
+            institutionSelect.required = false;
+        }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', toggleRoleFields);
+</script>
+{% endblock %}

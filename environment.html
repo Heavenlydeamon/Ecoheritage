@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Environment - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-cream: #FCF9F2;
+        --forest-green: #1A3022;
+        --charcoal: #262626;
+        --accent-leaf: #2E8B57;
+        --soft-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        --ambient-occlusion: 0 40px 80px rgba(0, 0, 0, 0.18);
+    }
+
+    body {
+        background-color: var(--bg-cream);
+        color: var(--charcoal);
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Video Hero ─── */
+    .video-hero {
+        position: relative;
+        height: 65vh;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 60px;
+        background: #000;
+    }
+
+    .video-container {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    .hero-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.7;
+    }
+
+    .video-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.65));
+        z-index: 2;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        padding: 0 20px;
+        max-width: 800px;
+    }
+
+    .section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #6ee6a8;
+        display: block;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    .hero-content h1 {
+        font-family: 'Tenor Sans', serif;
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        margin-bottom: 20px;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .header-description {
+        margin: 0 auto;
+        color: rgba(255,255,255,0.88);
+        font-size: 1.05rem;
+        line-height: 1.7;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    /* ─── Bento Grid ─── */
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        grid-auto-rows: 240px;
+        gap: 24px;
+        padding: 40px 0 100px;
+    }
+
+    /* Span classes — applied directly to direct children of .module-grid */
+    .span-4-hero    { grid-column: span 4; grid-row: span 2; }
+    .span-2-portrait{ grid-column: span 2; grid-row: span 2; }
+    .span-3-wide    { grid-column: span 3; grid-row: span 1; }
+    .span-2-reg     { grid-column: span 2; grid-row: span 1; }
+
+    /* ─── Card Base ─── */
+    .module-card {
+        background: var(--forest-green);
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: var(--soft-shadow);
+        border: 1px solid rgba(0,0,0,0.04);
+        transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .module-card:hover {
+        transform: translateY(-6px) scale(1.005);
+        box-shadow: var(--ambient-occlusion);
+        z-index: 10;
+    }
+
+    /* ─── Image Layer ─── */
+    .module-image-wrapper {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    /* Hero card: image on right 60%, text panel on left 40% */
+    .span-4-hero .module-image-wrapper {
+        left: 42%;
+        right: 0;
+        width: auto;
+    }
+
+    .module-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 2.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .module-card:hover .module-image {
+        transform: scale(1.05);
+    }
+
+    /* ─── Gradient overlay (all cards) ─── */
+    .card-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%);
+    }
+
+    /* Hero card has no gradient on image side (image is separate panel) */
+    .span-4-hero .card-overlay {
+        left: 42%;
+        right: 0;
+        width: auto;
+        background: linear-gradient(to right, transparent, rgba(0,0,0,0.2));
+    }
+
+    /* ─── Hero Frosted Panel (text side of 4-col hero) ─── */
+    .hero-text-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 42%;
+        bottom: 0;
+        z-index: 5;
+        padding: 44px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        background: linear-gradient(135deg, rgba(26,48,34,0.97), rgba(26,48,34,0.88));
+        border-right: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ─── Regular Card Content ─── */
+    .module-content {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    /* ─── Index Badge ─── */
+    .module-index {
+        position: absolute;
+        top: 20px;
+        right: 22px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        opacity: 0.25;
+        z-index: 6;
+    }
+
+    /* ─── Category Label ─── */
+    .category-label {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: #6ee6a8;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    /* ─── Title ─── */
+    .module-title {
+        font-family: 'Tenor Sans', serif;
+        line-height: 1.05;
+        margin: 0 0 14px;
+    }
+
+    .span-4-hero .module-title   { font-size: 2.4rem; }
+    .span-2-portrait .module-title{ font-size: 2.6rem; }
+    .span-3-wide .module-title   { font-size: 1.7rem; }
+    .span-2-reg .module-title    { font-size: 1.4rem; }
+
+    /* ─── Description ─── */
+    .module-desc {
+        font-size: 0.88rem;
+        line-height: 1.65;
+        color: rgba(255,255,255,0.78);
+        margin-bottom: 22px;
+    }
+
+    .span-2-reg .module-desc  { display: none; }
+    .span-3-wide .module-desc { display: none; }
+
+    /* ─── Action Buttons ─── */
+    .module-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-bento {
+        display: inline-block;
+        padding: 9px 22px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-journey {
+        background: var(--accent-leaf);
+    }
+
+    .btn-journey:hover {
+        background: #3aad6e;
+        transform: translateY(-3px);
+        color: white;
+    }
+
+    .btn-quiz-bento {
+        background: rgba(255,255,255,0.12);
+        border: 1.5px solid rgba(255,255,255,0.45);
+        backdrop-filter: blur(8px);
+    }
+
+    .btn-quiz-bento:hover {
+        background: white;
+        color: var(--forest-green);
+        border-color: white;
+        transform: translateY(-3px);
+    }
+
+    /* ─── Reveal Animation ─── */
+    .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.9s cubic-bezier(0.2, 1, 0.3, 1),
+                    transform 0.9s cubic-bezier(0.2, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1100px) {
+        .module-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: 280px;
+        }
+        .span-4-hero,
+        .span-2-portrait,
+        .span-3-wide,
+        .span-2-reg {
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+        .span-4-hero .module-image-wrapper { left: 0; width: 100%; }
+        .span-4-hero .hero-text-panel      { display: none; }
+        .hero-mobile                        { display: flex !important; }
+        .span-4-hero .card-overlay         {
+            left: 0; width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.2));
+        }
+        .span-3-wide .module-desc,
+        .span-2-reg .module-desc { display: block; }
+    }
+
+    @media (max-width: 768px) {
+        .module-grid {
+            grid-template-columns: 1fr;
+            grid-auto-rows: auto;
+        }
+        .module-card { min-height: 320px; }
+        .module-title { font-size: 1.7rem !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <section class="video-hero">
+        <div class="video-container">
+            <div class="video-overlay"></div>
+            <video autoplay muted loop playsinline class="hero-video">
+                <source src="{% static 'video/environment.mp4' %}" type="video/mp4">
+            </video>
+        </div>
+        <div class="hero-content text-white reveal">
+            <span class="section-label">Ecosystem Modules</span>
+            <h1 class="text-white">Environment Overview</h1>
+            <p class="header-description">Discover the rich biodiversity and unique ecological landscapes of Kerala through our curated study modules.</p>
+        </div>
+    </section>
+</div>
+
+<div class="container">
+    <div class="module-grid">
+        {% for topic in topics %}
+        {% cycle 'span-4-hero' 'span-2-portrait' 'span-3-wide' 'span-3-wide' 'span-2-reg' 'span-2-reg' 'span-2-reg' as bento_span silent %}
+        <div class="module-card {{ bento_span }} reveal">
+
+            <div class="module-image-wrapper">
+                {% if topic.image_url %}
+                    <img src="{{ topic.image_url }}" alt="{{ topic.name }}" class="module-image" loading="lazy">
+                {% else %}
+                    <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a3022,#2e5c3e);display:flex;align-items:center;justify-content:center;">
+                        <i class="fa-solid fa-leaf fa-3x" style="color:rgba(110,230,168,0.25)"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card-overlay"></div>
+            <span class="module-index text-white">{{ forloop.counter|stringformat:"02d" }}</span>
+
+            {% if bento_span == 'span-4-hero' %}
+                <div class="hero-text-panel">
+                    <span class="category-label">Protected Archive</span>
+                    <h2 class="module-title">{{ topic.name }}</h2>
+                    <p class="module-desc">{{ topic.description|truncatewords:22 }}</p>
+                    <div class="module-actions">
+                        <a href="{% url 'topic_study' topic.id %}" class="btn-bento btn-journey text-white">Explore</a>
+                        <a href="{% url 'topic_quiz' topic.id %}" class="btn-bento btn-quiz-bento text-white">Quiz</a>
+                    </div>
+                </div>
+                {# hero-mobile: hidden on desktop, shown on tablet/mobile via media query #}
+                <div class="module-content hero-mobile" style="display:none;">
+                    <span class="category-label">Protected Archive</span>
+                    <h2 class="module-title">{{ topic.name }}</h2>
+                    <div class="module-actions">
+                        <a href="{% url 'topic_study' topic.id %}" class="btn-bento btn-journey text-white">Explore</a>
+                        <a href="{% url 'topic_quiz' topic.id %}" class="btn-bento btn-quiz-bento text-white">Quiz</a>
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="module-content">
+                    <span class="category-label">{% if bento_span == 'span-2-portrait' %}Featured Module{% else %}Module{% endif %}</span>
+                    <h2 class="module-title">{{ topic.name }}</h2>
+                    {% if bento_span == 'span-2-portrait' %}
+                        <p class="module-desc">{{ topic.description|truncatewords:18 }}</p>
+                    {% endif %}
+                    <div class="module-actions">
+                        <a href="{% url 'topic_study' topic.id %}" class="btn-bento btn-journey text-white">Study</a>
+                        <a href="{% url 'topic_quiz' topic.id %}" class="btn-bento btn-quiz-bento text-white">Quiz</a>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 reveal">
+            <p style="color:var(--charcoal);opacity:0.5">Environmental archives are being expanded. Check back soon.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center pb-5 mb-5 reveal">
+        <a href="/" class="btn-bento btn-journey px-5">↩ Return to Home</a>
+    </div>
+</div>
+
+<script>
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+        el.style.transitionDelay = `${i * 0.06}s`;
+        revealObserver.observe(el);
+    });
+</script>
+{% endblock %}

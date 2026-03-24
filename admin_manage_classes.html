@@ -1,0 +1,121 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Manage Classes - Admin Dashboard{% endblock %}
+
+{% block nav_links %}
+<li class="nav-item px-3 text-success fw-bold">
+    Admin: {{ user.username }}
+</li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_institutions' %}">Institutions</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_teachers' %}">Teachers</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_students' %}">Students</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_classes' %}">Classes</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_view_join_requests' %}">Requests</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_analytics' %}">Analytics</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_system_settings' %}">Settings</a></li>
+<li class="nav-item">
+    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Logout</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="welcome-section">
+        <h2>📚 Class Management</h2>
+        <p>View all classes across all institutions, monitor performance metrics, and activate/deactivate classes.</p>
+    </div>
+
+    <!-- Classes List -->
+    <div class="dashboard-card">
+        <h3 class="section-title">📚 All Classes ({{ class_data|length }})</h3>
+        {% if class_data %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: inherit;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #444;">
+                        <th style="padding: 15px; text-align: left;">Class</th>
+                        <th style="padding: 15px; text-align: left;">Institution</th>
+                        <th style="padding: 15px; text-align: left;">Teacher</th>
+                        <th style="padding: 15px; text-align: center;">Students</th>
+                        <th style="padding: 15px; text-align: center;">Quiz Attempts</th>
+                        <th style="padding: 15px; text-align: center;">Avg Score</th>
+                        <th style="padding: 15px; text-align: center;">Status</th>
+                        <th style="padding: 15px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in class_data %}
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 15px;">
+                            <strong>{{ item.class_obj.name }}</strong>
+                            {% if item.class_obj.subject %}
+                            <br><small style="color: var(--text-muted);">{{ item.class_obj.subject }}</small>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            {{ item.class_obj.institution.name }}
+                        </td>
+                        <td style="padding: 15px;">
+                            {{ item.class_obj.teacher.username }}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {{ item.student_count }}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {{ item.total_attempts }}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {% if item.avg_score >= 70 %}
+                            <span style="color: var(--accent-green);">{{ item.avg_score }}%</span>
+                            {% elif item.avg_score >= 40 %}
+                            <span style="color: #ffc107;">{{ item.avg_score }}%</span>
+                            {% else %}
+                            <span style="color: #ff4444;">{{ item.avg_score }}%</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {% if item.class_obj.is_active %}
+                            <span style="color: var(--accent-green);">Active</span>
+                            {% else %}
+                            <span style="color: #ff4444;">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {% if item.class_obj.is_active %}
+                            <form method="post" style="display: inline;" onsubmit="return confirm('Deactivate this class?')">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="deactivate">
+                                <input type="hidden" name="class_id" value="{{ item.class_obj.id }}">
+                                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Deactivate</button>
+                            </form>
+                            {% else %}
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="activate">
+                                <input type="hidden" name="class_id" value="{{ item.class_obj.id }}">
+                                <button type="submit" style="background: var(--accent-green); color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Activate</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No classes found in the system.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

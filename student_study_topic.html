@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load markdown_extras %}
+
+{% block title %}Archive: {{ topic.name }} | EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* XP Notification Styles */
+    .xp-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px 30px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        z-index: 1100;
+        animation: slideInRight 0.5s ease-out, fadeOut 0.5s ease-out 4s forwards;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+        }
+    }
+
+    .xp-notification h4 {
+        margin: 0 0 10px 0;
+        color: #ffd700;
+    }
+
+    .xp-notification .xp-amount {
+        font-size: 28px;
+        font-weight: bold;
+        color: #ffd700;
+    }
+
+    .level-up-badge {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+    :root {
+        --bg-bone: #f8f9fa;
+        --text-dark: #1a1a1a;
+        --accent-gold: #b38b4d;
+        --border-subtle: rgba(0, 0, 0, 0.1);
+        --sidebar-width: 280px;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--bg-bone);
+        color: var(--text-dark);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* --- Reader Header --- */
+    #progress-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: transparent;
+        z-index: 1001;
+        /* Above the study-nav */
+    }
+
+    #progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.1s ease-out;
+        border-radius: 0 2px 2px 0;
+    }
+
+    .study-nav {
+        position: fixed;
+        top: 4px;
+        /* Offset for progress bar */
+        width: 100%;
+        background: white;
+        border-bottom: 1px solid var(--border-subtle);
+        z-index: 1000;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-logo {
+        font-family: 'Tenor Sans', serif;
+        color: var(--text-dark);
+        text-decoration: none;
+        letter-spacing: 2px;
+        font-weight: 700;
+    }
+
+    .nav-logo span {
+        color: var(--accent-gold);
+    }
+
+    .exit-btn {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* --- Reader Container --- */
+    .reader-container {
+        display: flex;
+        max-width: 1200px;
+        margin: 100px auto 100px;
+        gap: 60px;
+        padding: 0 40px;
+    }
+
+    /* Sticky Sidebar */
+    .reader-sidebar {
+        width: var(--sidebar-width);
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        border-left: 2px solid var(--border-subtle);
+    }
+
+    .sidebar-link {
+        display: block;
+        padding: 10px 20px;
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.3s;
+        border-left: 2px solid transparent;
+        margin-left: -2px;
+    }
+
+    .sidebar-link.active {
+        color: var(--text-dark);
+        font-weight: 700;
+        border-left-color: var(--accent-gold);
+    }
+
+    /* Content Column */
+    .reader-content {
+        flex: 1;
+        max-width: 800px;
+    }
+
+    .topic-h1 {
+        font-family: 'Tenor Sans', serif;
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        letter-spacing: -1px;
+    }
+
+    .material-block {
+        margin-bottom: 120px;
+        scroll-margin-top: 100px;
+    }
+
+    .material-h2 {
+        font-family: 'Tenor Sans', serif;
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-subtle);
+        padding-bottom: 15px;
+    }
+
+    .material-body p {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+    }
+
+    .media-box {
+        margin: 40px 0;
+        background: white;
+        border: 1px solid var(--border-subtle);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .media-box img {
+        width: 100%;
+        display: block;
+    }
+
+    .audio-box {
+        background: #f1f3f5;
+        padding: 30px;
+        border-radius: 8px;
+        margin: 40px 0;
+    }
+
+    /* --- Final Call --- */
+    .quiz-card {
+        background: var(--text-dark);
+        color: white;
+        padding: 80px;
+        text-align: center;
+        border-radius: 12px;
+    }
+
+    .btn-quiz.locked {
+        background: #444;
+        cursor: not-allowed;
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .lock-hint {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--accent-gold);
+        margin-top: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @media (max-width: 991px) {
+        .reader-sidebar {
+            display: none;
+        }
+
+        .reader-container {
+            margin-top: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if xp_info %}
+<div class="xp-notification">
+    <h4>🎉 XP Earned!</h4>
+    <div class="xp-amount">+{{ xp_info.xp }} XP</div>
+    <div style="font-size: 0.85rem; margin-top: 5px;">
+        {{ xp_info.reason }}
+        {% if xp_info.leveled_up %}<span class="level-up-badge">Level Up!</span>{% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div id="progress-container">
+    <div id="progress-bar"></div>
+</div>
+
+<nav class="study-nav">
+    <a href="/" class="nav-logo">ECO<span>HERITAGE</span></a>
+    <span style="font-weight: 600; font-size: 0.9rem;">Scholar Archive</span>
+    <a href="{% url 'student_view_topics' %}" class="exit-btn">Exit Archive</a>
+</nav>
+
+<div class="reader-container">
+    <aside class="reader-sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="#intro" class="sidebar-link active">Introduction</a></li>
+            {% for material in study_materials %}
+            <li class="sidebar-item">
+                <a href="#m-{{ forloop.counter }}" class="sidebar-link">{{ material.title }}</a>
+            </li>
+            {% endfor %}
+            <li class="sidebar-item"><a href="#quiz" class="sidebar-link">Certification</a></li>
+        </ul>
+    </aside>
+
+    <main class="reader-content">
+        <header id="intro" style="margin-bottom: 80px;">
+            <h1 class="topic-h1">{{ topic.name }}</h1>
+            <p style="font-size: 1.2rem; opacity: 0.7;">{{ topic.description }}</p>
+            {% if topic.image_url %}
+            <div class="media-box">
+                <img src="{{ topic.image_url }}" alt="{{ topic.name }}">
+            </div>
+            {% endif %}
+        </header>
+
+        {% for material in study_materials %}
+        <article id="m-{{ forloop.counter }}" class="material-block">
+            <h2 class="material-h2">{{ material.title }}</h2>
+
+            {% if material.image or material.image_url %}
+            <div class="media-box">
+                <img src="{% if material.image %}{{ material.image.url }}{% else %}{{ material.image_url }}{% endif %}"
+                    alt="{{ material.title }}">
+            </div>
+            {% endif %}
+
+            <div class="material-body">
+                {{ material.content_text|deduplicate_heading:material.title|linebreaks }}
+            </div>
+
+            {% if material.audio_url %}
+            <div class="audio-box">
+                <h5
+                    style="font-size: 0.7rem; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 15px; letter-spacing: 2px;">
+                    Vocal Archive</h5>
+                <audio controls style="width: 100%;">
+                    <source src="{{ material.audio_url }}" type="audio/mpeg">
+                </audio>
+            </div>
+            {% endif %}
+
+            {% if material.video_url %}
+            <div class="media-box">
+                <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden;">
+                    <iframe src="{{ material.video_url }}"
+                        style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+                        allowfullscreen></iframe>
+                </div>
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
+
+        <section id="quiz" class="quiz-card">
+            <h2 style="font-family: 'Tenor Sans', serif; font-size: 2.2rem; margin-bottom: 20px;">Knowledge Validation
+            </h2>
+            <p style="opacity: 0.8; font-weight: 300;">Complete the formal assessment to record your proficiency in this
+                sector.</p>
+
+            {% if not progress.is_studied %}
+            <div
+                style="margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                <p style="margin-bottom: 15px; font-size: 0.9rem;">Have you finished reading all the materials above?
+                </p>
+                <form action="{% url 'student_mark_topic_studied' topic.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-quiz"
+                        style="background: var(--accent-gold); border: none; padding: 12px 30px; font-size: 1rem; cursor: pointer; transition: 0.3s; border-radius: 6px;">Mark
+                        Topic as Studied</button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if quiz_locked %}
+            <a href="#" class="btn-quiz locked"
+                style="display: inline-block; padding: 15px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px;">Begin
+                Assessment</a>
+            <span class="lock-hint"><i class="fas fa-lock"></i> Mark the topic as studied to unlock this
+                assessment</span>
+            {% else %}
+            <a href="{% url 'student_take_quiz' topic.id %}" class="btn-quiz"
+                style="display: inline-block; padding: 15px 40px; background: white; color: var(--bg-charcoal); border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px; transition: 0.3s;">Begin
+                Assessment</a>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script>
+    const sections = document.querySelectorAll('article, header, section');
+    const navLinks = document.querySelectorAll('.sidebar-link');
+    const progressBar = document.getElementById('progress-bar');
+
+    window.addEventListener('scroll', () => {
+        // Micro-Progress Bar Logic
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        progressBar.style.width = scrolled + "%";
+
+        // Sidebar Navigation Logic
+        let current = "";
+        sections.forEach(section => {
+            if (pageYOffset >= section.offsetTop - 150) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) link.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}
+%}

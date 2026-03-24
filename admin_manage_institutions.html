@@ -1,0 +1,126 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Manage Institutions - Admin Dashboard{% endblock %}
+
+{% block nav_links %}
+<li class="nav-item px-3 text-success fw-bold">
+    Admin: {{ user.username }}
+</li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_institutions' %}">Institutions</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_teachers' %}">Teachers</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_students' %}">Students</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_classes' %}">Classes</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_analytics' %}">Analytics</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_system_settings' %}">Settings</a></li>
+<li class="nav-item">
+    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Logout</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="welcome-section">
+        <h2>🏫 Institution Management</h2>
+        <p>Create, edit, and delete institutions. View the complete institution hierarchy with teachers, classes, and student counts.</p>
+    </div>
+
+    <!-- Add New Institution Form -->
+    <div class="dashboard-card" style="margin-bottom: 30px;">
+        <h3 class="section-title">➕ Add New Institution</h3>
+        <form method="post" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div>
+                <label style="color: inherit; font-weight: 500; margin-bottom: 5px; display: block;">Institution Name</label>
+                <input type="text" name="name" class="form-control" style="background: #222; border: 1px solid #444; color: inherit;" required>
+            </div>
+            <div>
+                <label style="color: inherit; font-weight: 500; margin-bottom: 5px; display: block;">Description</label>
+                <input type="text" name="description" class="form-control" style="background: #222; border: 1px solid #444; color: inherit;" placeholder="Optional description">
+            </div>
+            <button type="submit" class="btn-dashboard">Add Institution</button>
+        </form>
+    </div>
+
+    <!-- Institution Tree -->
+    <div class="dashboard-card">
+        <h3 class="section-title">🏫 Institution Hierarchy</h3>
+        {% if institution_tree %}
+        <div style="display: grid; gap: 20px;">
+            {% for item in institution_tree %}
+            <div style="border: 1px solid #444; border-radius: 15px; padding: 20px; background: rgba(255,255,255,0.02);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 class="text-white" style="margin: 0;">{{ item.institution.name }}</h4>
+                    <div style="display: flex; gap: 10px;">
+                        <span style="background: rgba(0,255,136,0.1); color: var(--accent-green); padding: 5px 10px; border-radius: 10px; font-size: 12px;">
+                            {{ item.classes|length }} Classes
+                        </span>
+                        <span style="background: rgba(0,255,136,0.1); color: var(--accent-green); padding: 5px 10px; border-radius: 10px; font-size: 12px;">
+                            {{ item.student_count }} Students
+                        </span>
+                        <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this institution?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="institution_id" value="{{ item.institution.id }}">
+                            <button type="submit" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px;">Delete</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if item.institution.description %}
+                <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 14px;">{{ item.institution.description }}</p>
+                {% endif %}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Teachers -->
+                    <div>
+                        <h5 class="text-white" style="margin-bottom: 10px;">👨‍🏫 Teachers ({{ item.teachers|length }})</h5>
+                        {% if item.teachers %}
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            {% for teacher in item.teachers %}
+                            <span style="background: rgba(255,193,7,0.1); color: #ffc107; padding: 4px 8px; border-radius: 8px; font-size: 12px;">
+                                {{ teacher.user.username }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">No teachers assigned</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Classes -->
+                    <div>
+                        <h5 class="text-white" style="margin-bottom: 10px;">📚 Classes ({{ item.classes|length }})</h5>
+                        {% if item.classes %}
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            {% for class in item.classes %}
+                            <span style="background: rgba(0,123,255,0.1); color: #007bff; padding: 4px 8px; border-radius: 8px; font-size: 12px;">
+                                {{ class.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">No classes created</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No institutions found. Create your first institution above.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

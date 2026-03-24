@@ -1,0 +1,120 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Join Requests - Admin Dashboard{% endblock %}
+
+{% block nav_links %}
+<li class="nav-item px-3 text-success fw-bold">Admin: {{ user.username }}</li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_institutions' %}">Institutions</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_teachers' %}">Teachers</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_students' %}">Students</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_classes' %}">Classes</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_view_join_requests' %}">Requests</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_general_content' %}">Content</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_analytics' %}">Analytics</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_system_settings' %}">Settings</a></li>
+<li class="nav-item"><a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Logout</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="welcome-section">
+        <h2>Join Requests Monitoring</h2>
+        <p>Monitor all student join requests across the system. Track approval statistics and detect inactive teachers.</p>
+    </div>
+
+    <div class="dashboard-grid" style="margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="icon">⏳</div>
+            <h3>{{ pending_requests.count }}</h3>
+            <p>Pending Requests</p>
+        </div>
+        <div class="stat-card">
+            <div class="icon">✅</div>
+            <h3>{{ total_approved }}</h3>
+            <p>Approved</p>
+        </div>
+        <div class="stat-card">
+            <div class="icon">❌</div>
+            <h3>{{ total_rejected }}</h3>
+            <p>Rejected</p>
+        </div>
+    </div>
+
+    <div class="dashboard-card" style="margin-bottom: 30px;">
+        <h3 class="section-title">Pending Requests</h3>
+        {% if pending_requests %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: inherit;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #444;">
+                        <th style="padding: 15px; text-align: left;">Student</th>
+                        <th style="padding: 15px; text-align: left;">Class</th>
+                        <th style="padding: 15px; text-align: left;">Institution</th>
+                        <th style="padding: 15px; text-align: left;">Teacher</th>
+                        <th style="padding: 15px; text-align: left;">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in pending_requests %}
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 15px;"><strong>{{ req.student.username }}</strong></td>
+                        <td style="padding: 15px;">{{ req.class_obj.name }}</td>
+                        <td style="padding: 15px;">{{ req.class_obj.institution.name }}</td>
+                        <td style="padding: 15px;">{{ req.class_obj.teacher.username }}</td>
+                        <td style="padding: 15px;">{{ req.request_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No pending requests.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-card">
+        <h3 class="section-title">Request History</h3>
+        {% if all_requests %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: inherit;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #444;">
+                        <th style="padding: 15px; text-align: left;">Student</th>
+                        <th style="padding: 15px; text-align: left;">Class</th>
+                        <th style="padding: 15px; text-align: left;">Status</th>
+                        <th style="padding: 15px; text-align: left;">Processed By</th>
+                        <th style="padding: 15px; text-align: left;">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in all_requests %}
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 15px;"><strong>{{ req.student.username }}</strong></td>
+                        <td style="padding: 15px;">{{ req.class_obj.name }}</td>
+                        <td style="padding: 15px;">
+                            {% if req.status == 'approved' %}<span style="color: var(--accent-green);">Approved</span>
+                            {% elif req.status == 'rejected' %}<span style="color: #ff4444;">Rejected</span>
+                            {% else %}<span style="color: #ffc107;">Pending</span>{% endif %}
+                        </td>
+                        <td style="padding: 15px;">{{ req.processed_by|default:"-" }}</td>
+                        <td style="padding: 15px;">{{ req.request_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No request history.</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

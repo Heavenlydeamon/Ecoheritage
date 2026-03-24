@@ -1,0 +1,583 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Challenge - Question {{ progress.current }} - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bento-bg: #ffffff;
+        --bento-border: rgba(0,0,0,0.08);
+        --bento-radius: 20px;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --accent-emerald: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-rose: #f43f5e;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto auto;
+        gap: 24px;
+        margin-bottom: 30px;
+        perspective: 1000px;
+    }
+
+    .bento-item {
+        background: var(--bento-bg);
+        border: 1px solid var(--bento-border);
+        border-radius: var(--bento-radius);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bento-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        border-color: rgba(0,0,0,0.15);
+    }
+
+    .item-stats { grid-column: span 1; background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%); }
+    .item-timer { grid-column: span 2; }
+    .item-strikes { grid-column: span 1; background: linear-gradient(135deg, #fff 0%, #fef2f2 100%); }
+    .item-question { 
+        grid-column: span 4; 
+        padding: 48px; 
+        min-height: 300px;
+        background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+    }
+
+    .streak-counter {
+        background: linear-gradient(135deg, var(--accent-amber), #d97706);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .streak-counter.active {
+        animation: fire-pulse 1.5s infinite;
+    }
+
+    @keyframes fire-pulse {
+        0% { transform: scale(1); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+        50% { transform: scale(1.05); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5); }
+        100% { transform: scale(1); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+    }
+
+    .strikes-container {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .strike-leaf {
+        font-size: 32px;
+        filter: grayscale(100%);
+        opacity: 0.2;
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: inline-block;
+    }
+
+    .strike-leaf.active {
+        filter: grayscale(0%);
+        opacity: 1;
+        transform: scale(1.2) rotate(5deg);
+        text-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+    }
+
+    .strike-leaf.withered {
+        filter: grayscale(100%) brightness(0.5);
+        opacity: 0.5;
+        transform: translateY(10px) rotate(-15deg);
+    }
+
+    .timer-display {
+        font-size: 42px;
+        font-weight: 800;
+        color: var(--text-primary);
+        text-align: center;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: -1px;
+    }
+
+    .timer-bar {
+        height: 8px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .timer-fill {
+        height: 100%;
+        background: var(--accent-emerald);
+        transition: width 0.1s linear;
+    }
+
+    .question-text {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.4;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .choices {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .choice-btn {
+        background: #ffffff;
+        border: 2px solid rgba(0,0,0,0.05);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: left;
+        width: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+        border-color: var(--accent-emerald);
+        background: #f0fdf4;
+        color: var(--text-primary);
+        transform: translateX(8px);
+    }
+
+    .choice-letter {
+        width: 40px;
+        height: 40px;
+        background: rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: 700;
+        color: var(--text-primary);
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .choice-btn.correct { background: #dcfce7 !important; border-color: var(--accent-emerald) !important; color: #065f46 !important; }
+    .choice-btn.incorrect { background: #fee2e2 !important; border-color: var(--accent-rose) !important; color: #991b1b !important; }
+    .choice-btn.correct .choice-letter { background: var(--accent-emerald); color: white; }
+    .choice-btn.incorrect .choice-letter { background: var(--accent-rose); color: white; }
+
+    /* Progress bar */
+    .top-fixed-progress {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: rgba(0,0,0,0.05);
+        z-index: 1000;
+    }
+    .progress-fill {
+        height: 100%;
+        background: var(--accent-emerald);
+        width: 0%;
+        transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Feedback Overlay */
+    .feedback-overlay {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: white;
+        padding: 30px 50px;
+        border-radius: 30px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .feedback-overlay.show { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* Game Over Overlay */
+    .game-over-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(12px);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        text-align: center;
+    }
+    .game-over-overlay.show { display: flex; animation: fade-in 0.5s forwards; }
+
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    .xp-float {
+        position: absolute;
+        color: var(--accent-amber);
+        font-weight: 800;
+        font-size: 28px;
+        pointer-events: none;
+        animation: xp-float-up 1s ease-out forwards;
+        z-index: 2000;
+        text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+    }
+
+    @keyframes xp-float-up {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        50% { transform: translateY(-40px) scale(1.3); opacity: 1; }
+        100% { transform: translateY(-100px) scale(1.3); opacity: 0; }
+    }
+
+    .combo-info {
+        text-align: center;
+        margin-top: 15px;
+        font-weight: 700;
+        color: var(--accent-amber);
+        font-size: 14px;
+        display: none;
+    }
+    .combo-info.show { display: block; }
+
+    .difficulty-badge {
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .difficulty-badge.easy { background: #ecfdf5; color: #059669; }
+    .difficulty-badge.medium { background: #fffbeb; color: #d97706; }
+    .difficulty-badge.hard { background: #fef2f2; color: #dc2626; }
+
+    .loading {
+        text-align: center;
+        margin-top: 40px;
+        display: none;
+    }
+    .loading.show { display: block; }
+
+    .spinner {
+        width: 40px; height: 40px;
+        border: 4px solid rgba(0,0,0,0.05);
+        border-top-color: var(--accent-emerald);
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .bento-grid { grid-template-columns: repeat(2, 1fr); }
+        .item-question { grid-column: span 2; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="top-fixed-progress">
+    <div class="progress-fill" id="topProgressBar"></div>
+</div>
+
+<div class="container py-5">
+    <!-- Bento Grid Header -->
+    <div class="bento-grid">
+        <!-- Stats Card -->
+        <div class="bento-item item-stats">
+            <div id="streakCounter" class="streak-counter {% if challenge.current_streak > 3 %}active{% endif %}">
+                <span>🔥</span> <span id="streakValue">{{ challenge.current_streak }}</span> Streak
+            </div>
+            <div id="comboMeter" class="combo-info {% if combo_active %}show{% endif %}">
+                ✨ 1.5x COMBO ACTIVE
+            </div>
+        </div>
+
+        <!-- Timer Card -->
+        <div class="bento-item item-timer">
+            <div class="timer-display" id="timerDisplay">
+                {% if challenge.challenge_type == 'eco_rush' %}
+                <span id="globalTimer">--:--</span>
+                {% else %}
+                {{ challenge.time_limit_per_question }}
+                {% endif %}
+            </div>
+            <div class="timer-bar">
+                <div class="timer-fill" id="timerBar" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <!-- Strikes Card -->
+        <div class="bento-item item-strikes">
+            <div style="text-align: center; color: var(--text-secondary); font-size: 11px; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Strikes</div>
+            <div class="strikes-container" id="strikesContainer">
+                <span class="strike-leaf {% if challenge.strikes_count >= 1 %}withered{% endif %}">🍃</span>
+                <span class="strike-leaf {% if challenge.strikes_count >= 2 %}withered{% endif %}">🍃</span>
+                <span class="strike-leaf {% if challenge.strikes_count >= 3 %}withered{% endif %}">🍃</span>
+            </div>
+        </div>
+
+        <!-- Question Section -->
+        <div class="bento-item item-question" id="questionCard">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <span class="difficulty-badge {{ question.difficulty }}">{{ question.difficulty }}</span>
+                <div style="text-align: right;">
+                    <div style="color: var(--text-secondary); font-size: 11px; font-weight: 700; text-transform: uppercase;">Current Score</div>
+                    <div id="displayScore" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">{{ challenge.score }}</div>
+                </div>
+            </div>
+            
+            <div class="question-text" id="questionText">{{ question.question_text }}</div>
+            
+            <div class="choices" id="choicesContainer">
+                {% for choice in choices %}
+                <button class="choice-btn" data-choice-id="{{ choice.id }}">
+                    <div class="choice-letter">{{ forloop.counter|add:64|chr_ }}</div>
+                    <span>{{ choice.choice_text }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading message (hidden normally) -->
+    <div class="loading" id="loading">
+        <div class="spinner" style="margin: 0 auto 15px auto;"></div>
+        <p style="color: var(--text-secondary); font-weight: 500;">Next Question Arriving...</p>
+    </div>
+</div>
+
+<!-- Game Over Overlay -->
+<div class="game-over-overlay" id="gameOverOverlay">
+    <div style="font-size: 100px; margin-bottom: 20px;">📜</div>
+    <h1 style="font-size: 48px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Challenge Complete</h1>
+    <p id="gameOverReason" style="font-size: 20px; color: var(--text-secondary); margin-bottom: 40px;">Your exploration has concluded.</p>
+    <div class="spinner" style="margin: 0 auto;"></div>
+    <p style="margin-top: 25px; color: var(--text-secondary); font-weight: 500; letter-spacing: 1px;">FINALIZING RESULTS...</p>
+</div>
+
+{# Data for JavaScript #}
+{{ challenge.time_limit_per_question|json_script:"time-limit-data" }}
+{{ challenge.challenge_type|json_script:"challenge-type-data" }}
+{{ challenge.total_time_limit|json_script:"total-time-limit-data" }}
+{{ progress.percentage|json_script:"initial-progress-data" }}
+
+<script>
+    // CSRF Token logic
+    function getCSRFToken() {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) return csrfInput.value;
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+
+    // Config from Django
+    const timeLimit = JSON.parse(document.getElementById('time-limit-data').textContent);
+    const challengeType = JSON.parse(document.getElementById('challenge-type-data').textContent);
+    const totalTimeLimit = JSON.parse(document.getElementById('total-time-limit-data').textContent);
+    const initialProgress = JSON.parse(document.getElementById('initial-progress-data').textContent);
+
+    // State
+    let timeRemaining = timeLimit;
+    let timerInterval;
+    let currQuestionStartTime = Date.now();
+    let challengeStartTime = Date.now();
+    let isAnswering = false;
+
+    // UI Elements
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerBar = document.getElementById('timerBar');
+    const questionCard = document.getElementById('questionCard');
+    const choicesContainer = document.getElementById('choicesContainer');
+    const displayScore = document.getElementById('displayScore');
+    const streakValue = document.getElementById('streakValue');
+    const streakCounter = document.getElementById('streakCounter');
+    const comboMeter = document.getElementById('comboMeter');
+    const strikesContainer = document.getElementById('strikesContainer');
+    const topProgress = document.getElementById('topProgressBar');
+    const loading = document.getElementById('loading');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+
+    // Init UI
+    topProgress.style.width = initialProgress + '%';
+
+    function startTimer() {
+        currQuestionStartTime = Date.now();
+        if (challengeType !== 'eco_rush') {
+            timerInterval = setInterval(updateTimer, 100);
+        } else if (challengeType === 'eco_rush') {
+            // Global timer logic
+            updateGlobalTimer();
+            timerInterval = setInterval(updateGlobalTimer, 100);
+        }
+    }
+
+    function updateGlobalTimer() {
+        const elapsed = (Date.now() - challengeStartTime) / 1000;
+        const remaining = Math.max(0, totalTimeLimit - elapsed);
+        
+        const m = Math.floor(remaining / 60);
+        const s = Math.floor(remaining % 60);
+        timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        
+        if (remaining <= 30) timerDisplay.style.color = 'var(--accent-rose)';
+        
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            finishChallenge('Time is up!');
+        }
+    }
+
+    function updateTimer() {
+        const elapsed = (Date.now() - currQuestionStartTime) / 1000;
+        timeRemaining = Math.max(0, timeLimit - elapsed);
+        
+        timerDisplay.textContent = Math.ceil(timeRemaining);
+        timerBar.style.width = (timeRemaining / timeLimit * 100) + '%';
+        
+        if (timeRemaining <= 5) timerDisplay.style.color = 'var(--accent-rose)';
+        else timerDisplay.style.color = 'var(--text-primary)';
+        
+        if (timeRemaining <= 0 && !isAnswering) {
+            clearInterval(timerInterval);
+            submitAnswer(null);
+        }
+    }
+
+    function selectAnswer(choiceId, btn) {
+        if (isAnswering) return;
+        
+        const buttons = choicesContainer.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.disabled = true);
+        
+        submitAnswer(choiceId, btn);
+    }
+
+    function submitAnswer(choiceId, btn) {
+        if (isAnswering) return;
+        isAnswering = true;
+        clearInterval(timerInterval);
+
+        const timeTaken = (Date.now() - currQuestionStartTime) / 1000;
+        const formData = new FormData();
+        if (choiceId) formData.append('choice_id', choiceId);
+        formData.append('time_taken', timeTaken);
+        
+        fetch('/student/challenge/submit/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCSRFToken() }
+        })
+        .then(res => res.json())
+        .then(data => {
+            handleResult(data, btn);
+        })
+        .catch(err => {
+            console.error('Submission error:', err);
+            window.location.reload();
+        });
+    }
+
+    function handleResult(data, btn) {
+        if (btn) {
+            btn.classList.add(data.correct ? 'correct' : 'incorrect');
+            if (data.correct) {
+                spawnXP(btn, `+${data.points}`);
+            } else {
+                questionCard.style.animation = 'shake 0.4s';
+                setTimeout(() => questionCard.style.animation = '', 400);
+            }
+        }
+
+        updateStats(data);
+
+        if (data.complete) {
+            isAnswering = true;
+            finishChallenge(challengeType === 'survival' ? 'Out of strikes!' : 'Goal Reached!');
+        } else {
+            setTimeout(() => {
+                loading.classList.add('show');
+                questionCard.style.opacity = '0.5';
+                window.location.reload();
+            }, 800);
+        }
+    }
+
+    function updateStats(data) {
+        displayScore.textContent = data.points + parseInt(displayScore.textContent); // Fallback: view logic should return current total
+        // Actually, the server returns total points in 'points' currently based on my view logic? 
+        // No, my view returns 'points' as points_earned for THIS question. 
+        // Wait, I should have returned total_score.
+        
+        streakValue.textContent = data.streak;
+        if (data.streak > 3) streakCounter.classList.add('active');
+        else streakCounter.classList.remove('active');
+        
+        comboMeter.style.display = data.combo ? 'block' : 'none';
+        
+        // Update strikes
+        const leaves = strikesContainer.querySelectorAll('.strike-leaf');
+        leaves.forEach((leaf, i) => {
+            if (i < data.strikes) leaf.classList.add('withered');
+        });
+
+        topProgress.style.width = data.progress.percentage + '%';
+    }
+
+    function spawnXP(target, text) {
+        const rect = target.getBoundingClientRect();
+        const float = document.createElement('div');
+        float.className = 'xp-float';
+        float.textContent = text;
+        float.style.left = (rect.left + rect.width/2) + 'px';
+        float.style.top = rect.top + 'px';
+        document.body.appendChild(float);
+        setTimeout(() => float.remove(), 1000);
+    }
+
+    function finishChallenge(reason) {
+        document.getElementById('gameOverReason').textContent = reason;
+        gameOverOverlay.classList.add('show');
+        setTimeout(() => {
+            window.location.href = '/student/challenge/results/';
+        }, 2500);
+    }
+
+    // Delegation
+    choicesContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.choice-btn');
+        if (btn && !isAnswering) selectAnswer(btn.dataset.choiceId, btn);
+    });
+
+    startTimer();
+</script>
+{% endblock %}

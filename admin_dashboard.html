@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Console | EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    :root {
+        --bg-bone: #f4f1ea;
+        --bg-charcoal: #0e0e0e;
+        --card-white: #ffffff;
+        --accent-gold: #b38b4d;
+        --accent-purple: #6f42c1;
+        --accent-info: #17a2b8;
+        --border-subtle: rgba(0, 0, 0, 0.05);
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+    }
+
+    body {
+        background-color: #f8f9fa;
+        /* Light grey for dashboard depth */
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* --- Sidebar & Layout --- */
+    .admin-wrapper {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .admin-sidebar {
+        width: 280px;
+        background: var(--bg-charcoal);
+        color: inherit;
+        padding: 40px 20px;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+    }
+
+    .sidebar-brand {
+        font-family: 'Tenor Sans', serif;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        margin-bottom: 50px;
+        padding-left: 15px;
+        border-left: 3px solid var(--accent-gold);
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .nav-list li {
+        margin-bottom: 8px;
+    }
+
+    .nav-list a {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        padding: 12px 15px;
+        display: block;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+
+    .nav-list a:hover,
+    .nav-list a.active {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--accent-gold);
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 40px 60px;
+    }
+
+    /* --- Header & Top Bar --- */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .welcome-text h1 {
+        font-family: 'Tenor Sans', serif;
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+
+    /* --- Stats Grid (Like the Screenshot) --- */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .stat-mini-card {
+        background: var(--card-white);
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid var(--border-subtle);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-family: 'Tenor Sans', serif;
+        color: var(--bg-charcoal);
+    }
+
+    /* --- Actions Grid --- */
+    .actions-section-title {
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        color: var(--accent-gold);
+        font-weight: 700;
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 50px;
+    }
+
+    .action-card {
+        background: var(--card-white);
+        padding: 30px;
+        border-radius: 12px;
+        transition: transform 0.3s;
+        border: 1px solid var(--border-subtle);
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .action-card p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 25px;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+        transition: 0.3s;
+        border: 1px solid var(--bg-charcoal);
+        color: var(--bg-charcoal);
+    }
+
+    .btn-action:hover {
+        background: var(--bg-charcoal);
+        color: inherit;
+    }
+
+    /* --- Data Tables/Lists --- */
+    .data-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .data-card {
+        background: var(--card-white);
+        border-radius: 12px;
+        padding: 30px;
+        border: 1px solid var(--border-subtle);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 25px;
+    }
+
+    .activity-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .activity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-meta h4 {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .activity-meta p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .badge-score {
+        padding: 4px 12px;
+        background: var(--bg-bone);
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--accent-gold);
+    }
+
+    @media (max-width: 1200px) {
+        .stats-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .admin-sidebar {
+            width: 80px;
+        }
+
+        .sidebar-brand,
+        .nav-list span {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">ECOHERITAGE</div>
+        <ul class="nav-list">
+            <li><a href="{% url 'admin_dashboard' %}" class="active"><i class="fa-solid fa-gauge-high"></i>
+                    <span>Dashboard</span></a></li>
+            <li><a href="{% url 'admin_manage_institutions' %}"><i class="fa-solid fa-school"></i>
+                    <span>Institutions</span></a></li>
+            <li><a href="{% url 'admin_manage_teachers' %}"><i class="fa-solid fa-chalkboard-user"></i>
+                    <span>Teachers</span></a></li>
+            <li><a href="{% url 'admin_manage_students' %}"><i class="fa-solid fa-user-graduate"></i>
+                    <span>Students</span></a></li>
+            <li><a href="{% url 'admin_view_join_requests' %}"><i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Requests</span></a></li>
+            <li><a href="{% url 'admin_manage_general_content' %}"><i class="fa-solid fa-folder-open"></i>
+                    <span>Content</span></a></li>
+            <li><a href="{% url 'admin_analytics' %}"><i class="fa-solid fa-chart-line"></i> <span>Analytics</span></a>
+            </li>
+            <hr style="opacity: 0.1; margin: 20px 0;">
+            <li><a href="{% url 'admin_system_settings' %}"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
+            </li>
+            <li><a href="{% url 'logout' %}" style="color: #ff6b6b;"><i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <div class="welcome-text">
+                <h1>Admin Console</h1>
+                <p class="text-muted">Welcome back, {{ user.username }}. Here is an overview of the platform.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'admin_view_join_requests' %}" class="btn-action text-white"
+                    style="background: var(--accent-gold); border: none;">
+                    Pending Requests ({{ pending_requests }})
+                </a>
+            </div>
+        </header>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-dark alert-dismissible fade show mb-4" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="stats-row">
+            <div class="stat-mini-card">
+                <span class="stat-label">Institutions</span>
+                <div class="stat-value">{{ total_institutions }}</div>
+            </div>
+            <div class="stat-mini-card">
+                <span class="stat-label">Total Educators</span>
+                <div class="stat-value">{{ total_teachers }}</div>
+            </div>
+            <div class="stat-mini-card">
+                <span class="stat-label">Enrolled Students</span>
+                <div class="stat-value">{{ total_students }}</div>
+            </div>
+            <div class="stat-mini-card">
+                <span class="stat-label">Quiz Attempts</span>
+                <div class="stat-value">{{ total_quiz_attempts }}</div>
+            </div>
+        </div>
+
+        <h2 class="actions-section-title">Operational Controls</h2>
+
+        <div class="actions-grid">
+            <div class="action-card">
+                <h3><span style="color:var(--accent-gold)">🏫</span> Institutions</h3>
+                <p>Register and audit school/college administrative nodes.</p>
+                <a href="{% url 'admin_manage_institutions' %}" class="btn-action">Enter Module</a>
+            </div>
+
+            <div class="action-card">
+                <h3><span style="color:var(--accent-purple)">👨‍🏫</span> Teacher Hub</h3>
+                <p>Review credentials and manage teacher-class permissions.</p>
+                <a href="{% url 'admin_manage_teachers' %}" class="btn-action">Enter Module</a>
+            </div>
+
+            <div class="action-card">
+                <h3><span style="color:var(--accent-info)">📚</span> Content Archive</h3>
+                <p>Update heritage data, flora/fauna records, and cultural media.</p>
+                <a href="{% url 'admin_manage_general_content' %}" class="btn-action">Enter Module</a>
+            </div>
+
+            <div class="action-card">
+                <h3><span style="color:var(--bg-charcoal)">📊</span> System Analytics</h3>
+                <p>Generate performance reports for institutions and students.</p>
+                <a href="{% url 'admin_analytics' %}" class="btn-action">View Reports</a>
+            </div>
+        </div>
+
+        <!-- --- Charts Section --- -->
+        <div class="data-row" style="margin-bottom: 50px;">
+            <div class="data-card">
+                <div class="table-header">
+                    <h3 class="section-title">Student Growth (Last 6 Months)</h3>
+                </div>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+            <div class="data-card">
+                <div class="table-header">
+                    <h3 class="section-title">User Demographics</h3>
+                </div>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="roleChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-row">
+            <div class="data-card">
+                <div class="table-header">
+                    <h3 class="section-title">Recent Quiz activity</h3>
+                    <a href="#" class="btn-action" style="border:none; font-size:0.6rem">View All</a>
+                </div>
+                <ul class="activity-list">
+                    {% for attempt in recent_attempts %}
+                    <li class="activity-item">
+                        <div class="activity-meta">
+                            <h4>{{ attempt.user_identifier|default:"Anonymous" }}</h4>
+                            <p>{{ attempt.section.name }} • {{ attempt.date_attempted|date:"M d, H:i" }}</p>
+                        </div>
+                        <div class="badge-score">{{ attempt.score }}/{{ attempt.total_questions }}</div>
+                    </li>
+                    {% empty %}
+                    <p class="text-muted text-center py-4">No recent activity detected.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="data-card">
+                <div class="table-header">
+                    <h3 class="section-title">New Student Joins</h3>
+                    <a href="#" class="btn-action" style="border:none; font-size:0.6rem">Manage Joins</a>
+                </div>
+                <ul class="activity-list">
+                    {% for join in recent_joins %}
+                    <li class="activity-item">
+                        <div class="activity-meta">
+                            <h4>{{ join.student.username }}</h4>
+                            <p>Joined {{ join.class_obj.name }} • {{ join.processed_date|date:"M d" }}</p>
+                        </div>
+                        <div style="color: var(--accent-info); font-size: 0.7rem; font-weight: bold;">APPROVED</div>
+                    </li>
+                    {% empty %}
+                    <p class="text-muted text-center py-4">No recent class joins.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Safe JSON data passing for Chart.js -->
+{{ student_growth_labels|json_script:"growthLabelsData" }}
+{{ student_growth_data|json_script:"growthDataValues" }}
+{{ role_distribution_labels|json_script:"roleLabelsData" }}
+{{ role_distribution_data|json_script:"roleDataValues" }}
+
+<!-- --- Chart.js Initialization --- -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Shared Chart Options
+        Chart.defaults.color = '#757575';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // Parse data safely from Django View
+        const growthLabels = JSON.parse(document.getElementById('growthLabelsData').textContent);
+        const growthData = JSON.parse(document.getElementById('growthDataValues').textContent);
+        const roleLabels = JSON.parse(document.getElementById('roleLabelsData').textContent);
+        const roleData = JSON.parse(document.getElementById('roleDataValues').textContent);
+
+        // 1. Student Growth Line Chart
+        const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+        new Chart(ctxGrowth, {
+            type: 'line',
+            data: {
+                labels: growthLabels,
+                datasets: [{
+                    label: 'New Students',
+                    data: growthData,
+                    backgroundColor: 'rgba(179, 139, 77, 0.2)', // Accent gold with opacity
+                    borderColor: '#b38b4d', // Accent gold
+                    borderWidth: 2,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#b38b4d',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4 // Smooth lines
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0e0e0e',
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { precision: 0 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. User Demographics Doughnut Chart
+        const ctxRole = document.getElementById('roleChart').getContext('2d');
+        new Chart(ctxRole, {
+            type: 'doughnut',
+            data: {
+                labels: roleLabels,
+                datasets: [{
+                    data: roleData,
+                    backgroundColor: [
+                        '#b38b4d', // Students (Gold)
+                        '#6f42c1', // Teachers (Purple)
+                        '#17a2b8'  // Admins (Info/Teal)
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

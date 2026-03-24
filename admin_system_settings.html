@@ -1,0 +1,142 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}System Settings - Admin Dashboard{% endblock %}
+
+{% block nav_links %}
+<li class="nav-item px-3 text-success fw-bold">Admin: {{ user.username }}</li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_institutions' %}">Institutions</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_teachers' %}">Teachers</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_students' %}">Students</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_classes' %}">Classes</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_view_join_requests' %}">Requests</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_general_content' %}">Content</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_analytics' %}">Analytics</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_system_settings' %}">Settings</a></li>
+<li class="nav-item"><a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Logout</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="welcome-section">
+        <h2>System Settings & Security</h2>
+        <p>Activate/deactivate users, reset passwords, lock/unlock classes, and manage system security.</p>
+    </div>
+
+    <div class="dashboard-card" style="margin-bottom: 30px;">
+        <h3 class="section-title">User Management</h3>
+        {% if all_users %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: inherit;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #444;">
+                        <th style="padding: 15px; text-align: left;">Username</th>
+                        <th style="padding: 15px; text-align: left;">Role</th>
+                        <th style="padding: 15px; text-align: left;">Status</th>
+                        <th style="padding: 15px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in all_users %}
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 15px;"><strong>{{ user.username }}</strong></td>
+                        <td style="padding: 15px;">
+                            {% if user.userprofile.role %}{{ user.userprofile.role|title }}{% else %}Unknown{% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if user.is_active %}<span style="color: var(--accent-green);">Active</span>{% else %}<span style="color: #ff4444;">Inactive</span>{% endif %}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            <div style="display: flex; gap: 5px; justify-content: center;">
+                                {% if user.is_active %}
+                                <form method="post" style="display: inline;" onsubmit="return confirm('Deactivate this user?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="deactivate_user">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Deactivate</button>
+                                </form>
+                                {% else %}
+                                <form method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="activate_user">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" style="background: var(--accent-green); color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Activate</button>
+                                </form>
+                                {% endif %}
+                                <form method="post" style="display: inline;" onsubmit="return confirm('Reset password?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reset_password">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Reset</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No users found.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-card">
+        <h3 class="section-title">Class Lock Management</h3>
+        {% if all_classes %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: inherit;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #444;">
+                        <th style="padding: 15px; text-align: left;">Class</th>
+                        <th style="padding: 15px; text-align: left;">Institution</th>
+                        <th style="padding: 15px; text-align: left;">Teacher</th>
+                        <th style="padding: 15px; text-align: left;">Status</th>
+                        <th style="padding: 15px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for class_obj in all_classes %}
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 15px;"><strong>{{ class_obj.name }}</strong></td>
+                        <td style="padding: 15px;">{{ class_obj.institution.name }}</td>
+                        <td style="padding: 15px;">{{ class_obj.teacher.username }}</td>
+                        <td style="padding: 15px;">
+                            {% if class_obj.is_active %}<span style="color: var(--accent-green);">Active</span>{% else %}<span style="color: #ff4444;">Locked</span>{% endif %}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {% if class_obj.is_active %}
+                            <form method="post" style="display: inline;" onsubmit="return confirm('Lock this class?')">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="lock_class">
+                                <input type="hidden" name="class_id" value="{{ class_obj.id }}">
+                                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Lock</button>
+                            </form>
+                            {% else %}
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="unlock_class">
+                                <input type="hidden" name="class_id" value="{{ class_obj.id }}">
+                                <button type="submit" style="background: var(--accent-green); color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Unlock</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No classes found.</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

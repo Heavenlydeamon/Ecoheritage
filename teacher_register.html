@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Teacher Registration | EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-bone: #f4f1ea;
+        --bg-deep: #0e0e0e;
+        --text-dark: #1a1a1a;
+        --text-muted: #8e8e8e;
+        --accent-gold: #b38b4d;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --input-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    body, html {
+        height: 100%;
+        margin: 0;
+        background-color: var(--bg-deep);
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .auth-wrapper {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+    }
+
+    /* --- Left Visual Panel --- */
+    .auth-visual {
+        flex: 1.2;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 80px;
+    }
+
+    .hero-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        filter: brightness(0.6);
+    }
+
+    .visual-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(14,14,14,0.1) 0%, rgba(14,14,14,0.9) 100%);
+        z-index: 2;
+    }
+
+    .visual-content {
+        position: relative;
+        z-index: 3;
+    }
+
+    .visual-content h2 {
+        font-family: 'Tenor Sans', serif;
+        color: #fff;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        line-height: 1.1;
+        margin: 0;
+    }
+
+    .visual-content span {
+        color: var(--accent-gold);
+        display: block;
+    }
+
+    /* --- Right Form Panel --- */
+    .auth-form-side {
+        flex: 0.8;
+        background-color: var(--bg-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        border-left: 1px solid var(--glass-border);
+        z-index: 4;
+        overflow-y: auto;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .auth-header h1 {
+        font-family: 'Tenor Sans', serif;
+        color: #fff;
+        font-size: 2rem;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .auth-header p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 30px;
+    }
+
+    /* --- Form Elements --- */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--accent-gold);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--glass-border);
+        padding: 16px;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        transition: 0.3s;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        outline: none;
+        border-color: var(--accent-gold);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group select option {
+        background-color: var(--bg-deep);
+        color: #fff;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .helptext {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    .required { color: #ff6b6b; }
+
+    /* Institution Toggle */
+    .institution-toggle {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+
+    .institution-toggle label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-weight: normal;
+        color: #fff;
+        font-size: 0.85rem;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    .institution-toggle input[type="radio"] {
+        width: auto;
+        margin-right: 8px;
+        padding: 0;
+        background: transparent;
+        border: 1px solid var(--glass-border);
+    }
+
+    .institution-toggle input[type="radio"]:checked {
+        border-color: var(--accent-gold);
+    }
+
+    .institution-search {
+        margin-bottom: 10px;
+    }
+
+    .institution-search input {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid var(--glass-border);
+        padding: 14px;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .institution-search input:focus {
+        outline: none;
+        border-color: var(--accent-gold);
+    }
+
+    .btn-auth {
+        width: 100%;
+        padding: 18px;
+        background: var(--accent-gold);
+        border: none;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.4s;
+        margin-top: 20px;
+    }
+
+    .btn-auth:hover {
+        background: #8a6a3a;
+        letter-spacing: 6px;
+    }
+
+    /* --- Role Links Section --- */
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 25px 0;
+    }
+
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .divider span {
+        padding: 0 15px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+    }
+
+    .role-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .role-links a {
+        padding: 12px;
+        border: 1px solid var(--glass-border);
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+        text-align: center;
+        border-radius: 4px;
+        transition: 0.3s;
+    }
+
+    .role-links a:hover {
+        border-color: var(--accent-gold);
+        background: rgba(179, 139, 77, 0.05);
+    }
+
+    /* --- Message & Error Styling --- */
+    .message, .form-errors {
+        padding: 12px;
+        font-size: 0.8rem;
+        border-left: 3px solid var(--accent-gold);
+        background: rgba(179, 139, 77, 0.1);
+        color: #fff;
+        margin-bottom: 20px;
+    }
+
+    .form-errors ul { margin: 0; padding-left: 15px; }
+
+    .auth-link {
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    .auth-link p { color: var(--text-muted); font-size: 0.85rem; }
+    .auth-link a { color: var(--accent-gold); text-decoration: none; font-weight: 600; }
+
+    @media (max-width: 991px) {
+        .auth-visual { display: none; }
+        .auth-form-side { flex: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    
+    <div class="auth-visual">
+        <img src="{% static 'images/register.jpg' %}" alt="Kerala Landscape" class="hero-img">
+        <div class="visual-overlay"></div>
+        <div class="visual-content">
+            <h2>Join as a<br><span>Teacher!</span></h2>
+        </div>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="auth-container">
+            
+            <header class="auth-header">
+                <h1>👨‍🏫 Teacher Registration</h1>
+                <p>Create your teacher account to manage classes and students</p>
+            </header>
+
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if form.errors %}
+            <div class="form-errors">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username">Username <span class="required">*</span></label>
+                    <input type="text" name="username" id="id_username" placeholder="Choose a username" required>
+                    <span class="helptext">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password1">Password <span class="required">*</span></label>
+                    <input type="password" name="password1" id="id_password1" placeholder="Create a password" required>
+                    <span class="helptext">Your password must contain at least 8 characters.</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password2">Confirm Password <span class="required">*</span></label>
+                    <input type="password" name="password2" id="id_password2" placeholder="Confirm your password" required>
+                    <span class="helptext">Enter the same password as before, for verification.</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" name="email" id="email" placeholder="your.email@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone_number">Phone Number <span class="required">*</span></label>
+                    <input type="tel" name="phone_number" id="phone_number" placeholder="+1 234 567 8900" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Institution <span class="required">*</span></label>
+                    
+                    <div class="institution-toggle">
+                        <label>
+                            <input type="radio" name="institution_type" value="existing" id="institution_existing" checked>
+                            Select Existing
+                        </label>
+                        <label>
+                            <input type="radio" name="institution_type" value="new" id="institution_new">
+                            Add New Institution
+                        </label>
+                    </div>
+                    
+                    <div class="existing-institution-fields" id="existing_institution_fields">
+                        <div class="institution-search">
+                            <input type="text" id="institution_search" placeholder="Search institutions..." autocomplete="off">
+                        </div>
+                        <select name="institution" id="institution">
+                            <option value="">Select Institution</option>
+                            {% for institution in institutions %}
+                            <option value="{{ institution.id }}">{{ institution.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="new-institution-fields" id="new_institution_fields" style="display: none;">
+                        <input type="text" name="new_institution_name" id="new_institution_name" placeholder="Enter institution name">
+                        <textarea name="new_institution_description" id="new_institution_description" placeholder="Enter institution description (optional)" rows="2"></textarea>
+                    </div>
+                </div>
+
+                
+                <div class="form-group">
+                    <label for="position">Position/Title <span class="required">*</span></label>
+                    <input type="text" name="position" id="position" placeholder="e.g., Professor, Lecturer, HOD" required>
+                    <span class="helptext">Your position or title at the institution</span>
+                </div>
+                
+                <button type="submit" class="btn-auth">Create Teacher Account</button>
+            </form>
+
+            <div class="divider">
+                <span>Or Register As</span>
+            </div>
+
+            <div class="role-links">
+                <a href="{% url 'student_register' %}">👨‍🎓 Student</a>
+                <a href="{% url 'teacher_register' %}">👨‍🏫 Teacher</a>
+            </div>
+
+            <div class="auth-link">
+                <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Institution toggle functionality
+    const institutionExisting = document.getElementById('institution_existing');
+    const institutionNew = document.getElementById('institution_new');
+    const existingFields = document.getElementById('existing_institution_fields');
+    const newFields = document.getElementById('new_institution_fields');
+    const institutionSelect = document.getElementById('institution');
+    const newInstitutionName = document.getElementById('new_institution_name');
+    
+    institutionExisting.addEventListener('change', function() {
+        if (this.checked) {
+            existingFields.style.display = 'block';
+            newFields.style.display = 'none';
+            institutionSelect.required = true;
+            newInstitutionName.required = false;
+            newInstitutionName.value = '';
+        }
+    });
+    
+    institutionNew.addEventListener('change', function() {
+        if (this.checked) {
+            existingFields.style.display = 'none';
+            newFields.style.display = 'block';
+            institutionSelect.required = false;
+            institutionSelect.value = '';
+            newInstitutionName.required = true;
+        }
+    });
+    
+    // Institution search functionality
+    const searchInput = document.getElementById('institution_search');
+    const institutionDropdown = document.getElementById('institution');
+    const options = Array.from(institutionDropdown.options);
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        while (institutionDropdown.options.length > 1) {
+            institutionDropdown.remove(1);
+        }
+        
+        let matchCount = 0;
+        options.forEach(function(option, index) {
+            if (index === 0) return;
+            
+            const optionText = option.text.toLowerCase();
+            if (optionText.includes(searchTerm)) {
+                institutionDropdown.add(option.cloneNode(true));
+                matchCount++;
+            }
+        });
+        
+        if (matchCount === 0 && searchTerm !== '') {
+            const noResultsOption = document.createElement('option');
+            noResultsOption.text = 'No institutions found. Try adding a new one.';
+            noResultsOption.disabled = true;
+            institutionDropdown.add(noResultsOption);
+        }
+    });
+    
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const institutionType = document.querySelector('input[name="institution_type"]:checked').value;
+        
+        if (institutionType === 'existing' && !institutionSelect.value) {
+            e.preventDefault();
+            alert('Please select an institution from the list or add a new one.');
+            return false;
+        }
+        
+        if (institutionType === 'new' && !newInstitutionName.value.trim()) {
+            e.preventDefault();
+            alert('Please enter the new institution name.');
+            return false;
+        }
+    });
+</script>
+{% endblock %}
+

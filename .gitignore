@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+
+# Environment
+.env
+venv/
+
+# AI / Cache
+.cache/
+*.bin
+*.pt
+*.gguf
+
+# Media
+*.mp4
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

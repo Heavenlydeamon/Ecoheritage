@@ -1,0 +1,717 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Class: {{ class_obj.name }} - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .class-header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .class-header h2 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+    }
+
+    .class-header p {
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .class-meta {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+
+    .class-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+    }
+
+    .class-meta-item span {
+        color: var(--accent-green);
+        font-weight: 600;
+    }
+
+    /* Tabs */
+    .tabs-container {
+        margin-bottom: 30px;
+    }
+
+    .tabs-nav {
+        display: flex;
+        gap: 5px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 0;
+        overflow-x: auto;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 15px 25px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+        color: #fff;
+    }
+
+    .tab-btn.active {
+        color: var(--accent-green);
+        border-bottom-color: var(--accent-green);
+    }
+
+    .tab-content {
+        display: none;
+        padding: 25px 0;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Tables */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+
+    .data-table th {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        font-weight: 600;
+    }
+
+    .data-table td {
+        color: inherit;
+    }
+
+    .data-table tr:hover {
+        background: rgba(0, 255, 136, 0.05);
+    }
+
+    /* Badges */
+    .badge {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-success {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+
+    .badge-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        border: 1px solid #333;
+    }
+
+    .badge-info {
+        background: rgba(0, 150, 255, 0.1);
+        color: #0096ff;
+        border: 1px solid #0096ff;
+    }
+
+    /* Action buttons */
+    .btn-action {
+        background: var(--accent-green);
+        color: #000;
+        font-weight: 600;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+    }
+
+    .btn-action:hover {
+        background: #fff;
+    }
+
+    .btn-action-secondary {
+        background: transparent;
+        border: 1px solid var(--accent-green);
+        color: var(--accent-green);
+    }
+
+    .btn-action-secondary:hover {
+        background: var(--accent-green);
+        color: #000;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+
+    /* Section-Topic hierarchy */
+    .hierarchy-item {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+
+    .hierarchy-item h4 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hierarchy-item p {
+        color: var(--text-muted);
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .topics-list {
+        margin-left: 20px;
+    }
+
+    .topic-item {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+
+    .topic-item h5 {
+        color: inherit;
+        margin-bottom: 8px;
+    }
+
+    .topic-item p {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .topic-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Student performance */
+    .performance-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+
+    .performance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .performance-header h4 {
+        color: inherit;
+        margin: 0;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .stat-item {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .stat-item .value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--accent-green);
+    }
+
+    .stat-item .label {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    /* Leaderboard */
+    .leaderboard-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #333;
+    }
+
+    .leaderboard-item:last-child {
+        border-bottom: none;
+    }
+
+    .rank {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 15px;
+    }
+
+    .rank-1 {
+        background: linear-gradient(135deg, #ffd700, #ffaa00);
+        color: #000;
+    }
+
+    .rank-2 {
+        background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+        color: #000;
+    }
+
+    .rank-3 {
+        background: linear-gradient(135deg, #cd7f32, #b87333);
+        color: #000;
+    }
+
+    .rank-other {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+
+    .leaderboard-info {
+        flex: 1;
+    }
+
+    .leaderboard-info h4 {
+        color: inherit;
+        margin: 0 0 5px 0;
+    }
+
+    .leaderboard-info p {
+        color: var(--text-muted);
+        margin: 0;
+        font-size: 13px;
+    }
+
+    .leaderboard-score {
+        color: var(--accent-green);
+        font-weight: 700;
+        font-size: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Class Header -->
+    <div class="class-header">
+        <h2>🏫 Class: {{ class_obj.name }}</h2>
+        <p>{{ class_obj.subject }} • {{ class_obj.institution.name }}</p>
+        <div class="class-meta">
+            <div class="class-meta-item">
+                <i class="fas fa-users"></i>
+                <span>{{ students.count }}</span> Students
+            </div>
+            <div class="class-meta-item">
+                <i class="fas fa-folder"></i>
+                <span>{{ sections.count }}</span> Sections
+            </div>
+            <div class="class-meta-item">
+                <i class="fas fa-book"></i>
+                <span>{{ total_topics }}</span> Topics
+            </div>
+            <div class="class-meta-item">
+                <i class="fas fa-question-circle"></i>
+                <span>{{ total_questions }}</span> Questions
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="sections">📁 Sections</button>
+            <button class="tab-btn" data-tab="topics">📘 Topics</button>
+            <button class="tab-btn" data-tab="materials">📂 Materials</button>
+            <button class="tab-btn" data-tab="quiz">📝 Quiz</button>
+            <button class="tab-btn" data-tab="ai-quiz">🤖 AI Quiz</button>
+            <button class="tab-btn" data-tab="students">👥 Students</button>
+            <button class="tab-btn" data-tab="performance">📊 Performance</button>
+            <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+        </div> REPLACE
+
+        <!-- Sections Tab -->
+        <div id="sections" class="tab-content active">
+                <h3 class="text-white" style="margin: 0;">📁 Sections</h3>
+                <a href="{% url 'teacher_manage_sections' %}" class="btn-action text-white">+ Add Section</a>
+            </div>
+
+            {% if sections %}
+            {% for section in sections %}
+            <div class="hierarchy-item">
+                <h4>
+                    {% if forloop.first %}📚{% else %}📖{% endif %}
+                    {{ section.name }}
+                </h4>
+                <p>{{ section.description }}</p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span class="badge badge-info">{{ section.topics.count }} Topics</span>
+                    <span class="badge badge-secondary">{{ section.questions.count }} Questions</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>No sections yet. <a href="{% url 'teacher_manage_sections' %}"
+                        style="color: var(--accent-green);">Create your first section</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Topics Tab -->
+        <div id="topics" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #fff; margin: 0;">📘 Topics</h3>
+                <a href="{% url 'teacher_manage_topics' %}" class="btn-action">+ Add Topic</a>
+            </div>
+
+            {% if all_topics %}
+            {% for topic in all_topics %}
+            <div class="topic-item">
+                <h5>📖 {{ topic.name }}</h5>
+                <p>{{ topic.description }}</p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span class="badge badge-secondary">{{ topic.study_materials.count }} Materials</span>
+                    <span class="badge badge-info">{{ topic.questions.count }} Questions</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>No topics yet. <a href="{% url 'teacher_manage_topics' %}" style="color: var(--accent-green);">Create
+                        your first topic</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Materials Tab -->
+        <div id="materials" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #fff; margin: 0;">📂 Study Materials</h3>
+                <a href="{% url 'teacher_manage_study_materials' %}" class="btn-action">+ Add Material</a>
+            </div>
+
+            {% if all_materials %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Topic</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in all_materials %}
+                    <tr>
+                        <td><strong>{{ material.title }}</strong></td>
+                        <td>{{ material.topic.name }}</td>
+                        <td>
+                            {% if material.content_text %}📝 Text{% endif %}
+                            {% if material.image %}🖼️ Image{% endif %}
+                            {% if material.audio %}🎵 Audio{% endif %}
+                            {% if material.video %}🎬 Video{% endif %}
+                        </td>
+                        <td>
+                            <a href="#" class="btn-action btn-action-secondary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No study materials yet. <a href="{% url 'teacher_manage_study_materials' %}"
+                        style="color: var(--accent-green);">Add your first material</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quiz Tab -->
+        <div id="quiz" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #fff; margin: 0;">📝 Quiz Questions</h3>
+                <a href="{% url 'teacher_add_quiz_question' %}" class="btn-action">+ Add Question</a>
+            </div>
+
+            {% if all_questions %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Topic</th>
+                        <th>Difficulty</th>
+                        <th>Choices</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for question in all_questions %}
+                    <tr>
+                        <td>{{ question.question_text|truncatechars:50 }}</td>
+                        <td>{{ question.topic.name|default:"General" }}</td>
+                        <td>
+                            <span
+                                class="badge {% if question.difficulty == 'easy' %}badge-success{% elif question.difficulty == 'medium' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ question.difficulty|title }}
+                            </span>
+                        </td>
+                        <td>{{ question.choice_set.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No quiz questions yet. <a href="{% url 'teacher_add_quiz_question' %}"
+                        style="color: var(--accent-green);">Add your first question</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- AI Quiz Tab -->
+        <div id="ai-quiz" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #fff; margin: 0;">🤖 AI Generated Quizzes & Lessons</h3>
+                <div>
+                    <a href="{% url 'teacher_ai_lesson_generator' %}?class_id={{ class_obj.id }}" class="btn-action"
+                        style="background: var(--accent-green); margin-right: 10px;">+ Generate Lesson</a>
+                    <a href="{% url 'teacher_ai_quiz_generator' %}?class_id={{ class_obj.id }}" class="btn-action"
+                        style="background: var(--accent-gold);">+ Generate Quiz</a>
+                </div>
+            </div>
+
+            {% if ai_quizzes %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Topic</th>
+                        <th>Questions</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in ai_quizzes %}
+                    <tr>
+                        <td><strong>{{ quiz.title }}</strong></td>
+                        <td>{{ quiz.topic.name|default:"General" }}</td>
+                        <td>{{ quiz.questions.count }}</td>
+                        <td>
+                            <span
+                                class="badge {% if quiz.status == 'approved' %}badge-success{% elif quiz.status == 'pending' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ quiz.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ quiz.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="#" class="btn-action btn-action-secondary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No AI quizzes yet. <a href="{% url 'teacher_ai_quiz_generator' %}?class_id={{ class_obj.id }}"
+                        style="color: var(--accent-green);">Generate your first AI quiz</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Students Tab -->
+        <div id="students" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #fff; margin: 0;">👥 Students</h3>
+                <a href="{% url 'teacher_view_students' %}" class="btn-action">View All</a>
+            </div>
+
+            {% if students %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td><strong>{{ student.user.username }}</strong></td>
+                        <td>{{ student.email|default:"N/A" }}</td>
+                        <td>{{ student.user.date_joined|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'teacher_view_student_performance' student.user.id %}"
+                                class="btn-action btn-action-secondary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No students in this class yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="performance" class="tab-content">
+            <h3 style="color: #fff; margin-bottom: 20px;">📊 Performance Overview</h3>
+
+            {% if quiz_attempts %}
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="value">{{ total_quizzes }}</div>
+                    <div class="label">Total Quizzes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">{{ avg_score|floatformat:1 }}%</div>
+                    <div class="label">Average Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">{{ best_score }}</div>
+                    <div class="label">Best Score</div>
+                </div>
+            </div>
+
+            <h4 style="color: #fff; margin: 30px 0 15px 0;">Recent Attempts</h4>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Section</th>
+                        <th>Topic</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in quiz_attempts %}
+                    <tr>
+                        <td>{{ attempt.user_identifier }}</td>
+                        <td>{{ attempt.section.name }}</td>
+                        <td>{{ attempt.topic.name|default:"N/A" }}</td>
+                        <td>
+                            <span class="badge badge-success">
+                                {{ attempt.score }}/{{ attempt.total_questions }}
+                            </span>
+                        </td>
+                        <td>{{ attempt.date_attempted|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No quiz attempts yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div id="leaderboard" class="tab-content">
+            <h3 style="color: #fff; margin-bottom: 20px;">🏆 Class Leaderboard</h3>
+
+            {% if leaderboard %}
+            {% for entry in leaderboard %}
+            <div class="leaderboard-item">
+                <div
+                    class="rank {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-other{% endif %}">
+                    {{ forloop.counter }}
+                </div>
+                <div class="leaderboard-info">
+                    <h4>{{ entry.student.username }}</h4>
+                    <p>{{ entry.total_attempts }} quizzes completed</p>
+                </div>
+                <div class="leaderboard-score">{{ entry.total_score }}</div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>No leaderboard data yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 30px;">
+        <a href="{% url 'teacher_manage_classes' %}" class="btn-action btn-action-secondary">
+            ← Back to Manage Classes
+        </a>
+    </div>
+</div>
+
+<script>
+    // Tab functionality
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding content
+            btn.classList.add('active');
+            const tabId = btn.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

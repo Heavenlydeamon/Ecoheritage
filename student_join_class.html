@@ -1,0 +1,177 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Join Class - EcoHeritage Kerala{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="welcome-section">
+        <h2>Join a Class 📚</h2>
+        <p>Browse available classes by institution and teacher, then send a request to join.</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not classes_by_institution %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🏫</div>
+        <p>No classes available at the moment. Please check back later.</p>
+    </div>
+    {% else %}
+    
+    {% for institution_data in classes_by_institution.values %}
+    <div class="institution-section">
+        <h3 class="institution-title">🏛️ {{ institution_data.institution.name }}</h3>
+        
+        {% for teacher_data in institution_data.teachers.values %}
+        <div class="teacher-section">
+            <h4 class="teacher-title">👨‍🏫 {{ teacher_data.teacher.username }}</h4>
+            
+            <div class="classes-grid">
+                {% for class in teacher_data.classes %}
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>{{ class.name }}</h3>
+                        <span class="badge badge-info">{{ class.institution.name }}</span>
+                    </div>
+                    <div class="class-details">
+                        <p><strong>Teacher:</strong> {{ class.teacher.username }}</p>
+                        <p><strong>Students:</strong> {{ class.students.count }}</p>
+                    </div>
+                    
+                    {% if class.id in pending_class_ids %}
+                    <div class="request-status pending">
+                        <span>⏳ Request Pending</span>
+                    </div>
+                    {% else %}
+                    <form method="POST" class="join-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="class_id" value="{{ class.id }}">
+                        <div class="form-group">
+                            <textarea name="message" placeholder="Optional message to teacher..." rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn-dashboard" style="width: 100%;">Send Join Request</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    
+    {% endif %}
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'student_dashboard' %}" class="btn-dashboard btn-dashboard-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+    .institution-section {
+        margin-bottom: 40px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        padding: 25px;
+    }
+    
+    .institution-title {
+        color: var(--accent-green);
+        font-size: 22px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .teacher-section {
+        margin-left: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .teacher-title {
+        color: #fff;
+        font-size: 18px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .classes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+    
+    .class-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+    }
+    
+    .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .class-header h3 {
+        margin: 0;
+        color: var(--accent-green);
+        font-size: 16px;
+    }
+    
+    .class-details {
+        margin-bottom: 15px;
+    }
+    
+    .class-details p {
+        margin: 5px 0;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+    }
+    
+    .request-status {
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .request-status.pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+    
+    .join-form .form-group {
+        margin-bottom: 10px;
+    }
+    
+    .join-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-family: inherit;
+    }
+    
+    .join-form textarea:focus {
+        outline: none;
+        border-color: var(--accent-green);
+    }
+</style>
+{% endblock %}

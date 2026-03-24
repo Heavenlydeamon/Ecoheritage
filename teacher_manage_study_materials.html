@@ -1,0 +1,292 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Manage Study Materials - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    .form-card h3 {
+        color: var(--accent-green);
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #333;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        color: inherit;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        font-size: 14px;
+        color: inherit;
+        transition: border-color 0.3s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--accent-green);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #666;
+    }
+    .form-group textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+    .form-group select {
+        cursor: pointer;
+        background-color: #0a0a0a;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .btn-submit {
+        background: var(--accent-green);
+        color: #000;
+        font-weight: 700;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+    .btn-submit:hover {
+        background: var(--accent-gold);
+        transform: scale(1.02);
+    }
+    .material-card {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+    .material-card:hover {
+        border-color: var(--accent-green);
+    }
+    .material-card h4 {
+        color: inherit;
+        margin-bottom: 10px;
+    }
+    .material-content {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 15px;
+        line-height: 1.6;
+        max-height: 100px;
+        overflow: hidden;
+    }
+    .material-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    .media-tags {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .media-tag {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .media-tag.image {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+    .media-tag.audio {
+        background: rgba(0, 150, 255, 0.1);
+        color: #0096ff;
+        border: 1px solid #0096ff;
+    }
+    .media-tag.video {
+        background: rgba(255, 165, 0, 0.1);
+        color: orange;
+        border: 1px solid orange;
+    }
+    .page-header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .page-header h2 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        color: var(--text-muted);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h2>📚 Manage Study Materials</h2>
+        <p>Upload study content, images, audio, and video for each topic</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <h3>Add New Study Material</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="topic">Select Topic *</label>
+                <select id="topic" name="topic" required>
+                    <option value="">-- Select Topic --</option>
+                    {% for topic in all_topics %}
+                    <option value="{{ topic.id }}" {% if selected_topic.id == topic.id %}selected{% endif %}>
+                        {{ topic.section.name }} - {{ topic.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">Material Title *</label>
+                <input type="text" id="title" name="title" required placeholder="e.g., Introduction to Western Ghats">
+            </div>
+            
+            <div class="form-group">
+                <label for="content_text">Content Text *</label>
+                <textarea id="content_text" name="content_text" required placeholder="Enter the study material content here..."></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="image">Upload Image</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                    <small style="color: #666;">Supported formats: JPG, PNG, GIF, WEBP</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="audio">Upload Audio</label>
+                    <input type="file" id="audio" name="audio" accept="audio/*">
+                    <small style="color: #666;">Supported formats: MP3, WAV, OGG</small>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="video">Upload Video</label>
+                <input type="file" id="video" name="video" accept="video/*">
+                <small style="color: #666;">Supported formats: MP4, WEBM, OGG</small>
+            </div>
+            
+            <div style="border-top: 1px solid #333; margin: 20px 0; padding-top: 20px;">
+                <p style="margin-bottom: 15px;">Or use external URLs (leave upload fields empty if using URLs):</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="image_url">Image URL</label>
+                        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="audio_url">Audio URL</label>
+                        <input type="url" id="audio_url" name="audio_url" placeholder="https://example.com/audio.mp3">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="video_url">Video URL</label>
+                    <input type="url" id="video_url" name="video_url" placeholder="https://youtube.com/watch?v=...">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="order">Display Order</label>
+                <input type="number" id="order" name="order" value="0" min="0">
+            </div>
+            
+            <button type="submit" class="btn-submit">Add Study Material</button>
+        </form>
+    </div>
+
+    {% if selected_topic %}
+    <div class="form-card">
+        <h3>Study Materials for {{ selected_topic.name }}</h3>
+        {% if study_materials %}
+            {% for material in study_materials %}
+            <div class="material-card">
+                <h4>{{ material.title }}</h4>
+                <div class="material-content">{{ material.content_text|truncatewords:30 }}</div>
+                <div class="media-tags">
+                    {% if material.image_url %}
+                    <span class="media-tag image">🖼️ Image</span>
+                    {% endif %}
+                    {% if material.audio_url %}
+                    <span class="media-tag audio">🔊 Audio</span>
+                    {% endif %}
+                    {% if material.video_url %}
+                    <span class="media-tag video">🎥 Video</span>
+                    {% endif %}
+                </div>
+                <div class="material-meta">
+                    <span>📊 Order: {{ material.order }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📚</div>
+                <p>No study materials for this topic yet. Add your first material above!</p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

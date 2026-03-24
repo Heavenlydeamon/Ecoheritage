@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}Environment Quiz - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-container {
+        background: var(--card-gray);
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+        padding: 50px 40px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .difficulty-selector {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 20px;
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+    }
+    .difficulty-selector p {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+    }
+    .difficulty-selector a {
+        margin: 0 10px;
+        padding: 8px 20px;
+        text-decoration: none;
+        border-radius: 0;
+        color: var(--text-muted);
+        transition: all 0.3s;
+        border: 1px solid transparent;
+    }
+    .difficulty-selector a:hover {
+        color: var(--accent-green);
+        border-color: var(--accent-green);
+    }
+    .difficulty-selector a.active {
+        background: transparent;
+        color: var(--accent-green) !important;
+        border-color: var(--accent-green);
+        font-weight: 600;
+    }
+    .question {
+        margin-bottom: 40px;
+        padding: 30px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+        background: transparent;
+        transition: transform 0.3s ease;
+    }
+    .question:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .question h3 {
+        color: var(--accent-green);
+        margin-top: 0;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        font-family: 'Tenor Sans', serif;
+    }
+    .question p {
+        color: var(--text-dark);
+        font-size: 1.05rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    .choices {
+        margin-top: 20px;
+    }
+    .choice {
+        margin: 12px 0;
+    }
+    .choice label {
+        cursor: pointer;
+        display: block;
+        padding: 15px 20px;
+        border-radius: 4px;
+        transition: all 0.3s;
+        color: var(--text-muted);
+        border: 1px solid var(--border-subtle);
+        background: transparent;
+    }
+    .choice label:hover {
+        background: rgba(46, 139, 87, 0.05); /* very faint sea green */
+        border-color: var(--accent-green);
+        color: var(--text-dark);
+    }
+    .choice input[type="radio"] {
+        margin-right: 15px;
+        accent-color: var(--accent-green);
+    }
+    .submit-section {
+        text-align: center;
+        margin-top: 50px;
+    }
+    .btn-submit {
+        background: var(--accent-green);
+        color: #fff;
+        font-weight: 500;
+        padding: 15px 40px;
+        border-radius: 0;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border: 1px solid var(--accent-green);
+        transition: all 0.4s;
+    }
+    .btn-submit:hover {
+        background: transparent;
+        color: var(--accent-green);
+        transform: translateY(-2px);
+    }
+    .btn-back {
+        background: transparent;
+        color: var(--text-dark);
+        padding: 12px 30px;
+        border-radius: 0;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border: 1px solid var(--border-subtle);
+        transition: all 0.4s;
+    }
+    .btn-back:hover {
+        border-color: var(--text-dark);
+        background: rgba(0,0,0,0.02);
+    }
+    .nav-links {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border-subtle);
+    }
+    .nav-links a {
+        margin: 0 10px;
+    }
+    .no-questions {
+        text-align: center;
+        padding: 60px 40px;
+        color: var(--text-muted);
+        border: 1px dashed var(--border-subtle);
+        border-radius: 4px;
+        background: transparent;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="quiz-container reveal">
+        <h1 class="text-center mb-5" style="color: var(--bg-deep);">Environment Quiz</h1>
+        
+        <div class="difficulty-selector reveal">
+            <p>Select Difficulty: 
+                <a href="?difficulty=easy" {% if difficulty == 'easy' %}class="active"{% endif %}>Easy</a> | 
+                <a href="?difficulty=medium" {% if difficulty == 'medium' %}class="active"{% endif %}>Medium</a> | 
+                <a href="?difficulty=hard" {% if difficulty == 'hard' %}class="active"{% endif %}>Hard</a>
+            </p>
+        </div>
+        
+        {% if questions %}
+        <form method="post">
+            {% csrf_token %}
+            {% for question in questions %}
+            <div class="question reveal">
+                <h3>Question {{ forloop.counter }}</h3>
+                <p>{{ question.text }}</p>
+                <div class="choices">
+                    {% for choice_num, choice_text in question.choices %}
+                    <div class="choice">
+                        <input type="radio" name="question_{{ question.id }}" value="{{ choice_num }}" id="q{{ question.id }}_{{ choice_num }}">
+                        <label for="q{{ question.id }}_{{ choice_num }}">{{ choice_text }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="submit-section reveal">
+                <button type="submit" class="btn-submit">Submit Quiz</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="no-questions reveal">
+            <p>No questions available for this difficulty level. Please try a different difficulty.</p>
+        </div>
+        {% endif %}
+
+        <div class="nav-links reveal">
+            <a href="{% url 'environment' %}" class="btn-back">Back to Environment</a>
+            <a href="/" class="btn-back">Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

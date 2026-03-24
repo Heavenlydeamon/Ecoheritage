@@ -1,0 +1,211 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Manage Sections - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    .form-card h3 {
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #333;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        color: #fff;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 15px;
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #ffffff;
+        transition: border-color 0.3s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--accent-green);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #666;
+    }
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    .btn-submit {
+        background: var(--accent-green);
+        color: #000;
+        font-weight: 700;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+    .btn-submit:hover {
+        background: #fff;
+        transform: scale(1.02);
+    }
+    .btn-secondary {
+        background: transparent;
+        border: 2px solid var(--accent-green);
+        color: var(--accent-green);
+        font-weight: 600;
+    }
+    .btn-secondary:hover {
+        background: var(--accent-green);
+        color: #000;
+    }
+    .section-card {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+    .section-card:hover {
+        border-color: var(--accent-green);
+    }
+    .section-card h4 {
+        color: #fff;
+        margin-bottom: 10px;
+    }
+    .section-card p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    .section-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .section-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+    .btn-small {
+        padding: 8px 15px;
+        font-size: 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .page-header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .page-header h2 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        color: var(--text-muted);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h2>📁 Manage Sections</h2>
+        <p>Create and manage sections for organizing educational content (Environment, Heritage, Cultural, etc.)</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <h3>Add New Section</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Section Name *</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Environment, Heritage Sites, Cultural Artforms">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" required placeholder="Describe what this section covers..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="image_url">Image URL</label>
+                <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+            </div>
+            
+            <div class="form-group">
+                <label for="video_url">Video URL</label>
+                <input type="url" id="video_url" name="video_url" placeholder="https://youtube.com/watch?v=...">
+            </div>
+            
+            <button type="submit" class="btn-submit">Create Section</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h3>Existing Sections</h3>
+        {% if sections %}
+            {% for section in sections %}
+            <div class="section-card">
+                <h4>{{ section.name }}</h4>
+                <p>{{ section.description }}</p>
+                <div class="section-meta">
+                    <span>📖 {{ section.topics.count }} Topics</span>
+                    <span>❓ {{ section.questions.count }} Questions</span>
+                </div>
+                <div class="section-actions">
+                    <a href="{% url 'teacher_manage_topics_by_section' section.id %}" class="btn-small btn-secondary">Manage Topics</a>
+                    <a href="{% url 'teacher_add_quiz_question' %}" class="btn-small btn-submit" style="padding: 8px 15px; font-size: 12px;">Add Questions</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📁</div>
+                <p>No sections created yet. Add your first section above!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,357 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-book-reader"></i> AI Lesson Creator</h2>
+                <div>
+                    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="initialFormRow">
+        <!-- Step 1: Input Data -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> 1. Provide Lesson Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form id="lessonGeneratorForm">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="lessonTitle" class="form-label fw-bold">Lesson Title / Topic <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg" id="lessonTitle" name="title"
+                                placeholder="e.g. Theyyam Ritual in Kerala" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="contextText" class="form-label fw-bold">Chapter Text / Context (Optional)</label>
+                            <textarea class="form-control" id="contextText" name="context_text" rows="8" 
+                                placeholder="Paste your chapter text here to generate a lesson grounded in your specific material..."></textarea>
+                            <div class="form-text">If left blank, AI will use its internal knowledge.</div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="lessonLength" class="form-label fw-bold">Lesson Depth / Length</label>
+                                <select class="form-select form-select-lg" name="length" id="lessonLength">
+                                    <option value="short">Short (Concise)</option>
+                                    <option value="medium" selected>Medium (Standard)</option>
+                                    <option value="detailed">Detailed (Comprehensive)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Select AI Action <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-lg" name="action" id="aiAction">
+                                    <option value="generate_lesson" selected>Generate Full Lesson</option>
+                                    <option value="generate_summary">Generate Summary Only</option>
+                                    <option value="generate_key_terms">Generate Key Terms Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+                                <i class="fas fa-magic"></i> Generate Content
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-3 text-muted small">
+                            <i class="fas fa-info-circle"></i> <strong>Tip:</strong> Leave "Chapter Text" blank for a <strong>Quick Title-Based Lesson</strong>.
+                        </div>
+                    </form>
+
+                    <!-- Loading Spinner -->
+                    <div class="text-center mt-4" id="loadingSpinner" style="display: none;">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-primary h5 fw-bold">AI is processing your content...</p>
+                        <p class="text-muted">Analyzing text and structuring segments. This takes about 30-60 seconds.</p>
+                    </div>
+
+                    <div class="alert alert-danger mt-3" id="errorMessage" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> How to use</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">1</div>
+                            <h6 class="mb-0 fw-bold">Enter Title</h6>
+                        </div>
+                        <p class="text-muted ps-5">Provide a clear title for your lesson topic.</p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">2</div>
+                            <h6 class="mb-0 fw-bold">Paste Context (Optional)</h6>
+                        </div>
+                        <p class="text-muted ps-5">Paste text from a textbook or chapter to guide the AI. This ensures the output matches your curriculum.</p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">3</div>
+                            <h6 class="mb-0 fw-bold">Review & Edit</h6>
+                        </div>
+                        <p class="text-muted ps-5">You'll see a preview of the generated content. You can fix any AI errors before publishing.</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="fw-bold"><i class="fas fa-microchip me-2"></i> Model Status</h6>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span>FLAN-T5 Model:</span>
+                                <span class="badge bg-secondary" id="modelStatus">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Preview & Edit -->
+    <div class="row" id="previewRow" style="display: none;">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-eye"></i> 2. Preview & Edit Content</h5>
+                    <button class="btn btn-sm btn-light" onclick="showForm()">
+                        <i class="fas fa-edit"></i> Edit Inputs
+                    </button>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Generated Content (Markdown Supported)</label>
+                        <textarea class="form-control" id="editableContent" rows="15" style="font-family: monospace;"></textarea>
+                    </div>
+
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">3. Publication Settings</h5>
+                            <div class="row mt-3">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Assign to Class <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="pubClassName" placeholder="e.g. 10th Grade History">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Section Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="pubSectionName" placeholder="e.g. Cultural Heritage">
+                                </div>
+                            </div>
+                            <div class="form-text">A new class and section will be created if they don't exist.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-outline-secondary btn-lg" onclick="showForm()">
+                            <i class="fas fa-arrow-left"></i> Start Over
+                        </button>
+                        <button class="btn btn-success btn-lg px-5" id="publishBtn">
+                            <i class="fas fa-paper-plane"></i> Publish to Students
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-3" id="publishLoading" style="display: none;">
+                        <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                        <span class="ms-2 text-success">Creating records and generating quiz...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div class="row" id="successRow" style="display: none;">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm border-0 text-center py-5 px-4">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-3">Successfully Published!</h2>
+                    <p class="text-muted h5 mb-4">Your lesson and its AI-generated quiz are now live for your students.</p>
+                    
+                    <div class="d-grid gap-3 col-md-8 mx-auto">
+                        <a id="viewLessonBtn" href="#" class="btn btn-primary btn-lg">
+                            <i class="fas fa-book-open me-2"></i> View Lesson
+                        </a>
+                        <a id="viewQuizBtn" href="#" class="btn btn-success btn-lg" style="display: none;">
+                            <i class="fas fa-tasks me-2"></i> Review Formed Quiz
+                        </a>
+                        <a href="{% url 'teacher_ai_lesson_generator' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-plus me-2"></i> Create Another Lesson
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+            document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+            }
+        }
+    });
+
+    function showForm() {
+        $('#initialFormRow').show();
+        $('#previewRow').hide();
+        $('#successRow').hide();
+    }
+
+    $(document).ready(function () {
+        checkModelStatus();
+
+        // 1. Generate Logic
+        $('#lessonGeneratorForm').submit(function (e) {
+            e.preventDefault();
+            
+            const formData = $(this).serialize();
+            
+            $('#generateBtn').prop('disabled', true);
+            $('#loadingSpinner').fadeIn();
+            $('#errorMessage').hide();
+
+            $.ajax({
+                url: '{% url "teacher_generate_lesson_api" %}',
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        $('#initialFormRow').hide();
+                        $('#editableContent').val(response.generated_content);
+                        $('#previewRow').fadeIn();
+                        
+                        // Prefill publication info from title if user hasn't filled it
+                        if (!$('#pubClassName').val()) {
+                            $('#pubClassName').val($('#lessonTitle').val() + " Class");
+                        }
+                    } else {
+                        showError(response.error);
+                    }
+                },
+                error: function (xhr) {
+                    showError(xhr.responseJSON?.error || 'An error occurred during generation.');
+                },
+                complete: function () {
+                    $('#generateBtn').prop('disabled', false);
+                    $('#loadingSpinner').hide();
+                }
+            });
+        });
+
+        // 2. Publish Logic
+        $('#publishBtn').click(function() {
+            const title = $('#lessonTitle').val();
+            const content = $('#editableContent').val();
+            const className = $('#pubClassName').val();
+            const sectionName = $('#pubSectionName').val();
+            
+            if (!className || !sectionName) {
+                alert("Please provide both Class and Section names.");
+                return;
+            }
+            
+            $('#publishBtn').prop('disabled', true);
+            $('#publishLoading').show();
+            
+            $.ajax({
+                url: '{% url "teacher_publish_lesson_api" %}',
+                method: 'POST',
+                data: {
+                    title: title,
+                    content: content,
+                    class_name: className,
+                    section_name: sectionName
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#previewRow').hide();
+                        
+                        // Update success links
+                        if (response.topic_url) {
+                            $('#viewLessonBtn').attr('href', response.topic_url);
+                        }
+                        if (response.quiz_url) {
+                            $('#viewQuizBtn').attr('href', response.quiz_url).show();
+                        } else {
+                            $('#viewQuizBtn').hide();
+                        }
+                        
+                        $('#successRow').fadeIn();
+                    } else {
+                        alert("Publish failed: " + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    alert("An error occurred during publication.");
+                },
+                complete: function() {
+                    $('#publishBtn').prop('disabled', false);
+                    $('#publishLoading').hide();
+                }
+            });
+        });
+
+        function showError(message) {
+            $('#errorMessage').text(message).show();
+            // Scroll to error
+            $('html, body').animate({
+                scrollTop: $("#errorMessage").offset().top - 100
+            }, 500);
+        }
+
+        function checkModelStatus() {
+            $.get('{% url "check_model_status" %}', function (data) {
+                const statusBadge = $('#modelStatus');
+                if (data.loaded) {
+                    statusBadge.removeClass('bg-secondary bg-danger').addClass('bg-success').text('Ready');
+                } else {
+                    statusBadge.removeClass('bg-secondary bg-success').addClass('bg-danger').text('Not Loaded');
+                }
+            }).fail(function () {
+                $('#modelStatus').text('Unknown');
+            });
+        }
+    });
+</script>
+
+<style>
+    .card { transition: transform 0.2s; }
+    .btn-lg { border-radius: 12px; }
+    textarea.form-control { border-radius: 12px; border: 1px solid #dee2e6; }
+    textarea.form-control:focus { box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1); }
+    .form-control-lg { border-radius: 12px; }
+    .form-select-lg { border-radius: 12px; }
+</style>
+{% endblock %}

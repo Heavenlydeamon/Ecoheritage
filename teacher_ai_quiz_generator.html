@@ -1,0 +1,587 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* --- Modern Bento Design --- */
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-auto-rows: minmax(100px, auto);
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .bento-item {
+        border-radius: 16px;
+        padding: 24px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Glassmorphism Effect */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+        border-color: var(--accent-gold);
+    }
+
+    /* Layout Assignments */
+    .item-header { grid-column: span 12; }
+    .item-form { grid-column: span 7; grid-row: span 4; }
+    .item-info { grid-column: span 5; grid-row: span 3; }
+    .item-status { grid-column: span 5; grid-row: span 1; }
+    .item-preview { grid-column: span 12; display: none; margin-top: 20px; }
+
+    @media (max-width: 992px) {
+        .item-form, .item-info, .item-status { grid-column: span 12; }
+    }
+
+    /* --- Enhanced Typography & Components --- */
+    .hero-title {
+        font-family: 'Tenor Sans', serif;
+        font-size: 2.5rem;
+        color: var(--bg-deep);
+        margin-bottom: 0;
+        letter-spacing: 1px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 12px 16px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 0 4px rgba(179, 139, 77, 0.1);
+    }
+
+    .btn-generate {
+        background: linear-gradient(135deg, var(--bg-deep) 0%, #2a2a2a 100%);
+        color: white !important;
+        border-radius: 12px;
+        padding: 16px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-generate:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .btn-generate::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        transition: 0.5s;
+    }
+
+    .btn-generate:hover::after {
+        left: 120%;
+    }
+
+    /* --- Status Indicators --- */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-ready { background: #e6f7ed; color: #1a7f37; border: 1px solid #1a7f3733; }
+    .status-waiting { background: #fff8e6; color: #9a6700; border: 1px solid #9a670033; }
+    .status-error { background: #ffebe9; color: #cf222e; border: 1px solid #cf222e33; }
+
+    .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        position: relative;
+    }
+
+    .pulse::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes pulse-ring {
+        0% { transform: scale(1); opacity: 0.7; }
+        100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* --- Preview Section --- */
+    .question-card {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: 12px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .question-card:hover {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: var(--accent-gold);
+    }
+
+    .option-item {
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 12px 16px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .option-correct {
+        background: #e6f7ed !important;
+        border-color: #1a7f3733 !important;
+        color: #1a7f37;
+    }
+
+    /* --- Micro-animations --- */
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease backwards;
+    }
+
+    @keyframes fadeInUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="bento-grid">
+        <!-- Header Section -->
+        <div class="bento-item item-header d-flex justify-content-between align-items-end fade-in-up" style="animation-delay: 0.1s">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">
+                        <li class="breadcrumb-item"><a href="{% url 'teacher_dashboard' %}" class="text-muted">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">AI Generator</li>
+                    </ol>
+                </nav>
+                <h1 class="hero-title"><i class="fas fa-sparkles text-gold"></i> AI Quiz Generator</h1>
+            </div>
+            <div class="d-flex gap-2 mb-1">
+                <a href="{% url 'teacher_my_quizzes' %}" class="btn-minimal">
+                    <i class="fas fa-layer-group"></i> My Bank
+                </a>
+                <a href="{% url 'teacher_manual_quiz' %}" class="btn-minimal">
+                    <i class="fas fa-feather-pointed"></i> Draft Manually
+                </a>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="bento-item item-form glass-card fade-in-up" style="animation-delay: 0.2s">
+            <h5 class="mb-4 fw-600"><i class="fas fa-wand-magic-sparkles me-2 text-gold"></i> Configuration</h5>
+            
+            <form id="quizGeneratorForm">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="form-label">Active Class</label>
+                        <select class="form-select" id="classSelect" name="class_id" required>
+                            <option value="">Choose a class...</option>
+                            {% for class in teacher_classes %}
+                            <option value="{{ class.id }}" {% if selected_class.id == class.id %}selected{% endif %}>
+                                {{ class.name }} &mdash; {{ class.subject }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Study Material Reference</label>
+                        <select class="form-select" id="materialSelect" name="study_material_id" required>
+                            <option value="">Choose study material...</option>
+                            {% for material in class_study_materials %}
+                            <option value="{{ material.id }}" data-length="{{ material.content_text|length }}">
+                                {{ material.title }} ({{ material.content_text|length }} chars)
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <p class="small text-muted mt-2 mb-0">Select the source content for AI to analyze and generate questions from.</p>
+                    </div>
+
+                    <input type="hidden" name="content_type" value="class">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Question Volume</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="fas fa-list-ol text-muted"></i></span>
+                            <input type="number" class="form-control border-start-0" id="numQuestions" name="num_questions" 
+                                   value="6" min="1" max="10" style="border-radius: 0 12px 12px 0;">
+                        </div>
+                        <p class="small text-muted mt-2">Up to 10 questions per batch.</p>
+                    </div>
+
+                    <div class="col-12 mt-5">
+                        <button type="submit" class="btn-generate w-100" id="generateBtn">
+                            <i class="fas fa-bolt-lightning me-2"></i> Synthesize Quiz
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="text-center mt-5" id="loadingSpinner" style="display: none;">
+                <div class="spinner-grow text-gold" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="mt-3 fw-bold">AI is Thinking...</h5>
+                <p class="text-muted">Analyzing content and crafting high-quality questions. This usually takes 30-60 seconds.</p>
+            </div>
+
+            <div class="alert alert-danger mt-4 border-0 rounded-4 shadow-sm" id="errorMessage" style="display: none;"></div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="bento-item item-info glass-card fade-in-up" style="animation-delay: 0.3s">
+            <h5 class="mb-4 fw-600"><i class="fas fa-book-sparkles me-2 text-gold"></i> Best Practices</h5>
+            
+            <div class="d-flex align-items-start mb-3">
+                <div class="bg-bone p-2 rounded-3 me-3"><i class="fas fa-file-lines text-gold"></i></div>
+                <div>
+                    <h6 class="mb-1 fw-bold">Quality Content</h6>
+                    <p class="small text-muted mb-0">Use materials with at least 500 characters for deep conceptual coverage.</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-start mb-3">
+                <div class="bg-bone p-2 rounded-3 me-3"><i class="fas fa-microchip text-gold"></i></div>
+                <div>
+                    <h6 class="mb-1 fw-bold">Review Process</h6>
+                    <p class="small text-muted mb-0">AI can hallucinate. Always verify clinical or historical technicalities.</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-start">
+                <div class="bg-bone p-2 rounded-3 me-3"><i class="fas fa-shield-halved text-gold"></i></div>
+                <div>
+                    <h6 class="mb-1 fw-bold">Approval Logic</h6>
+                    <p class="small text-muted mb-0">Approved quizzes are instantly mirrored to the students' dashboard.</p>
+                </div>
+            </div>
+            
+            <hr class="my-4 opacity-5">
+            
+            <div class="p-3 rounded-4 bg-bone">
+                <h6 class="mb-2 fw-bold small"><i class="fas fa-lightbulb me-2"></i> Pro-Tip:</h6>
+                <p class="small text-muted mb-0 italic">"Combine multiple topics into one study material to generate comprehensive end-of-unit assessments."</p>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <div class="bento-item item-status glass-card fade-in-up d-flex flex-column justify-content-center" style="animation-delay: 0.4s">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="small fw-600 text-muted uppercase tracking-1">Intelligence Status</span>
+                <div id="modelStatusContainer">
+                    <div class="status-pill status-waiting" id="modelStatus">
+                        <span class="pulse"></span> Checking...
+                    </div>
+                </div>
+            </div>
+            
+            <div id="preloadContainer" style="display:none;">
+                <p class="small text-muted mb-3 lh-sm">Internal logic core (Gemma-Mini) requires a heartbeat check. Ensure host bridge is active.</p>
+                <button type="button" class="btn btn-sm btn-dashboard-secondary w-100" id="preloadBtn">
+                    <i class="fas fa-wave-pulse me-2"></i> Synchronize Engine
+                </button>
+            </div>
+
+            <div id="loadingModelSpinner" style="display:none;" class="text-center py-2">
+                <div class="spinner-border spinner-border-sm text-gold" role="status"></div>
+                <span class="ms-2 small fw-500">Establishing Neural Link...</span>
+            </div>
+
+            <div id="activeModelInfo" style="display:none;" class="mt-auto">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-gold-subtle text-gold px-3 rounded-pill" id="deviceStatus">CUDA</span>
+                    <span class="small text-muted">Latency: ~240ms</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="bento-item item-preview glass-card fade-in-up" id="generatedQuizSection">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <h4 class="mb-0 hero-title" style="font-size: 1.8rem;">Preview Generated Artifacts</h4>
+                <button type="button" class="btn-minimal border-0" id="closePreview">
+                    <i class="fas fa-xmark me-2"></i> Dismiss
+                </button>
+            </div>
+            
+            <div id="quizQuestions" class="row"></div>
+            
+            <div class="d-flex gap-3 mt-5 pt-4 border-top">
+                <button type="button" class="btn-minimal px-4" id="saveDraftBtn">
+                    <i class="fas fa-bookmark me-2"></i> Hold as Draft
+                </button>
+                <button type="button" class="btn-generate px-5" id="submitApprovalBtn" style="padding: 12px 30px;">
+                    <i class="fas fa-paper-plane me-2"></i> Authorize & Publish
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="currentQuizId" value="">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set up CSRF token for all AJAX requests
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+        }
+    }
+});
+
+$(document).ready(function() {
+    // Check model status on page load
+    checkModelStatus();
+    
+    // When class is selected, reload page with class_id to get filtered study materials
+    $('#classSelect').change(function() {
+        const classId = $(this).val();
+        if (classId) {
+            // Reload page with selected class
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('class_id', classId);
+            window.location.href = currentUrl.toString();
+        }
+    });
+    
+    // Generate quiz
+    $('#quizGeneratorForm').submit(function(e) {
+        e.preventDefault();
+        
+        // Validate
+        const materialId = $('#materialSelect').val();
+        const materialOption = $('#materialSelect option:selected');
+        const contentLength = parseInt(materialOption.data('length') || 0);
+        
+        if (contentLength < 100) {
+            showError('Selected study material is too short. Minimum 100 characters required. Please add more content to the study material before generating a quiz.');
+            return;
+        }
+        
+        // Show loading
+        $('#generateBtn').prop('disabled', true);
+        $('#loadingSpinner').show();
+        $('#errorMessage').hide();
+        
+        // Submit form
+        $.ajax({
+            url: '{% url "teacher_generate_quiz" %}',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    $('#currentQuizId').val(response.quiz_id);
+                    displayGeneratedQuestions(response.questions);
+                    $('#generatedQuizSection').show();
+                } else {
+                    showError(response.error);
+                }
+            },
+            error: function(xhr) {
+                showError(xhr.responseJSON?.error || 'An error occurred');
+            },
+            complete: function() {
+                $('#generateBtn').prop('disabled', false);
+                $('#loadingSpinner').hide();
+            }
+        });
+    });
+    
+    // Close preview
+    $('#closePreview').click(function() {
+        $('#generatedQuizSection').hide();
+        $('#currentQuizId').val('');
+    });
+    
+    // Save as draft
+    $('#saveDraftBtn').click(function() {
+        saveQuiz('draft');
+    });
+    
+    // Submit for approval
+    $('#submitApprovalBtn').click(function() {
+        saveQuiz('submit');
+    });
+    
+    function saveQuiz(action) {
+        const quizId = $('#currentQuizId').val();
+        if (!quizId) return;
+        
+        $.ajax({
+            url: '{% url "teacher_save_quiz" quiz_id=0 %}'.replace('0', quizId),
+            method: 'POST',
+            data: {
+                action: action,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Quiz ' + (action === 'submit' ? 'submitted for approval!' : 'saved as draft!'));
+                    window.location.href = '{% url "teacher_my_quizzes" %}';
+                }
+            },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.error || 'An error occurred');
+            }
+        });
+    }
+    
+    function showError(message) {
+        $('#errorMessage').text(message).show();
+    }
+    
+    function displayGeneratedQuestions(questions) {
+        let html = '';
+        questions.forEach(function(q, index) {
+            html += '<div class="col-12 col-xl-6 mb-4">';
+            html += '  <div class="question-card p-4 h-100 shadow-sm">';
+            html += '    <div class="d-flex justify-content-between align-items-start mb-3">';
+            html += '      <span class="small fw-bold text-muted uppercase tracking-1">QUESTION ' + (index + 1) + '</span>';
+            html += '      <span class="status-pill ' + (q.difficulty === 'hard' ? 'status-error' : q.difficulty === 'medium' ? 'status-waiting' : 'status-ready') + '">';
+            html += '        ' + q.difficulty.toUpperCase();
+            html += '      </span>';
+            html += '    </div>';
+            html += '    <h5 class="mb-4 fw-bold lh-base">' + q.text + '</h5>';
+            html += '    <div class="options-container">';
+            
+            q.options.forEach(function(opt, optIndex) {
+                const letter = String.fromCharCode(64 + (optIndex + 1));
+                const isCorrect = opt.is_correct || opt.correct;
+                html += '      <div class="option-item ' + (isCorrect ? 'option-correct shadow-sm' : 'bg-white border') + '">';
+                html += '        <div class="d-flex align-items-center">';
+                html += '          <span class="me-3 fw-bold ' + (isCorrect ? 'text-success' : 'text-muted') + '">' + letter + '</span>';
+                html += '          <span>' + opt.text + '</span>';
+                if (isCorrect) {
+                   html += '          <i class="fas fa-circle-check ms-auto text-success"></i>';
+                }
+                html += '        </div>';
+                html += '      </div>';
+            });
+            
+            html += '    </div>';
+            html += '  </div>';
+            html += '</div>';
+        });
+        $('#quizQuestions').html(html);
+    }
+    
+    function checkModelStatus() {
+        $.get('{% url "check_model_status" %}', function(data) {
+            const statusContainer = $('#modelStatusContainer');
+            const infoContainer = $('#activeModelInfo');
+            const preloadContainer = $('#preloadContainer');
+            const deviceBadge = $('#deviceStatus');
+            
+            if (data.loaded) {
+                statusContainer.html('<div class="status-pill status-ready"><span class="pulse"></span> Ready</div>');
+                deviceBadge.text(data.device.toUpperCase());
+                infoContainer.fadeIn();
+                preloadContainer.hide();
+            } else {
+                statusContainer.html('<div class="status-pill status-error"><i class="fas fa-circle-xmark"></i> Offline</div>');
+                infoContainer.hide();
+                preloadContainer.fadeIn();
+            }
+        }).fail(function() {
+            $('#modelStatusContainer').html('<div class="status-pill status-waiting">Unknown</div>');
+        });
+    }
+
+    // Preload model
+    $('#preloadBtn').click(function() {
+        const btn = $(this);
+        const spinner = $('#loadingModelSpinner');
+        const container = $('#preloadContainer');
+        const statusContainer = $('#modelStatusContainer');
+        
+        btn.prop('disabled', true);
+        container.hide();
+        spinner.show();
+        statusContainer.html('<div class="status-pill status-waiting"><i class="fas fa-spinner fa-spin"></i> Linking...</div>');
+        
+        $.ajax({
+            url: '{% url "preload_model" %}',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    checkModelStatus();
+                } else {
+                    alert('Bridge Failure: ' + response.error);
+                    container.show();
+                }
+            },
+            error: function(xhr) {
+                alert('Neural Link Error: ' + (xhr.responseJSON?.error || 'Target Unreachable'));
+                container.show();
+            },
+            complete: function() {
+                spinner.hide();
+                btn.prop('disabled', false);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+

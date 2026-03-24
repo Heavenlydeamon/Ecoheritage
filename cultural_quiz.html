@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Cultural Quiz - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-container {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .difficulty-selector {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 15px;
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid var(--accent-green);
+        border-radius: 15px;
+    }
+    .difficulty-selector p {
+        color: inherit;
+        margin: 0;
+    }
+    .difficulty-selector a {
+        margin: 0 10px;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 8px;
+        color: var(--text-muted);
+        transition: all 0.3s;
+    }
+    .difficulty-selector a:hover {
+        color: var(--accent-green);
+    }
+    .difficulty-selector a.active {
+        background: var(--accent-green);
+        color: #000 !important;
+        font-weight: 700;
+    }
+    .question {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #333;
+        border-radius: 15px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    .question h3 {
+        color: var(--accent-green);
+        margin-top: 0;
+    }
+    .question p {
+        color: inherit;
+    }
+    .choices {
+        margin-top: 15px;
+    }
+    .choice {
+        margin: 10px 0;
+    }
+    .choice label {
+        cursor: pointer;
+        display: block;
+        padding: 12px 15px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        color: inherit;
+        border: 1px solid #333;
+    }
+    .choice label:hover {
+        background: rgba(0, 255, 136, 0.1);
+        border-color: var(--accent-green);
+    }
+    .choice input[type="radio"] {
+        margin-right: 10px;
+    }
+    .submit-section {
+        text-align: center;
+        margin-top: 30px;
+    }
+    .btn-submit {
+        background: var(--accent-green);
+        color: #000;
+        font-weight: 700;
+        padding: 15px 30px;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border: none;
+    }
+    .btn-submit:hover {
+        background: var(--accent-gold);
+        transform: scale(1.02);
+    }
+    .btn-back {
+        background: #333;
+        color: #fff;
+        padding: 15px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+    .btn-back:hover {
+        background: #444;
+    }
+    .nav-links {
+        text-align: center;
+        margin-top: 30px;
+    }
+    .nav-links a {
+        margin: 0 10px;
+    }
+    .no-questions {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="quiz-container">
+        <h1 class="text-center mb-4 text-white">Cultural Artforms Quiz</h1>
+        
+        <div class="difficulty-selector">
+            <p>Select Difficulty: 
+                <a href="?difficulty=easy" {% if difficulty == 'easy' %}class="active"{% endif %}>Easy</a> | 
+                <a href="?difficulty=medium" {% if difficulty == 'medium' %}class="active"{% endif %}>Medium</a> | 
+                <a href="?difficulty=hard" {% if difficulty == 'hard' %}class="active"{% endif %}>Hard</a>
+            </p>
+        </div>
+        
+        {% if questions %}
+        <form method="post">
+            {% csrf_token %}
+            {% for question in questions %}
+            <div class="question">
+                <h3>Question {{ forloop.counter }}</h3>
+                <p>{{ question.text }}</p>
+                <div class="choices">
+                    {% for choice_num, choice_text in question.choices %}
+                    <div class="choice">
+                        <input type="radio" name="question_{{ question.id }}" value="{{ choice_num }}" id="q{{ question.id }}_{{ choice_num }}">
+                        <label for="q{{ question.id }}_{{ choice_num }}">{{ choice_text }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="submit-section">
+                <button type="submit" class="btn-submit">Submit Quiz</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="no-questions">
+            <p>No questions available for this difficulty level. Please try a different difficulty.</p>
+        </div>
+        {% endif %}
+
+        <div class="nav-links">
+            <a href="{% url 'cultural' %}" class="btn-back">Back to Cultural</a>
+            <a href="/" class="btn-back">Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

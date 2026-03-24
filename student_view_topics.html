@@ -1,0 +1,219 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Study Topics - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .header h2 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        color: var(--text-muted);
+    }
+
+    .section-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .section-card h3 {
+        color: var(--accent-green);
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #333;
+    }
+
+    .section-card p {
+        color: var(--text-muted);
+        margin-bottom: 20px;
+    }
+
+    .topics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .topic-card {
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .topic-card:hover {
+        border-color: var(--accent-green);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
+    }
+
+    .topic-card h4 {
+        color: inherit;
+        margin-bottom: 10px;
+    }
+
+    .topic-card p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .topic-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 15px;
+    }
+
+    .topic-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: var(--accent-green);
+        color: #000;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        text-align: center;
+        flex: 1;
+    }
+
+    .btn:hover {
+        background: var(--accent-gold);
+        transform: scale(1.02);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        border: 2px solid var(--accent-green);
+        color: var(--accent-green);
+    }
+
+    .btn-secondary:hover {
+        background: var(--accent-green);
+        color: #000;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+
+    .section-header {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .general-header {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .class-header {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="header">
+        <h2>📖 Study Topics</h2>
+        <p>Browse all available topics and start learning. Each topic contains study materials and quizzes.</p>
+    </div>
+
+    <!-- General Contents Link (Replaced General Sections) -->
+    <div class="section-card"
+        style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 150, 255, 0.1)); border: 1px solid rgba(0, 255, 136, 0.3);">
+        <div>
+            <h3 style="color: var(--accent-green); margin-bottom: 5px; border-bottom: none; padding-bottom: 0;">🌐
+                Explore General Contents</h3>
+            <p style="margin-bottom: 0;">Discover topics about Environment, Heritage Sites, and Cultural Artforms
+                available to everyone.</p>
+        </div>
+        <a href="{% url 'home' %}" class="btn" style="white-space: nowrap; flex: 0 0 auto;">Explore Now</a>
+    </div>
+
+    <!-- Class-Specific Sections -->
+    {% if class_specific_sections %}
+    <div class="section-card">
+        <div class="section-header class-header">
+            <h3 style="color: #ffc107; margin-bottom: 0;">🏫 My Class Sections</h3>
+        </div>
+
+        {% for section in class_specific_sections %}
+        <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333;">
+            <h4 class="text-white" style="margin-bottom: 10px;">📚 {{ section.name }}</h4>
+            <p>{{ section.description }}</p>
+
+            {% if section.topics.all %}
+            <div class="topics-grid">
+                {% for topic in section.topics.all %}
+                <div class="topic-card" style="border-color: rgba(255, 193, 7, 0.3);">
+                    <h4>{{ topic.name }}</h4>
+                    <p>{{ topic.description|truncatewords:20 }}</p>
+                    <div class="topic-meta">
+                        <span>📚 {{ topic.study_materials.count }} Materials</span>
+                        <span>❓ {{ topic.questions.count }} Questions</span>
+                    </div>
+                    <div class="topic-actions">
+                        <a href="{% url 'student_study_topic' topic.id %}" class="btn"
+                            style="background: #ffc107;">Study</a>
+                        <a href="{% url 'student_take_quiz' topic.id %}" class="btn btn-secondary"
+                            style="border-color: #ffc107; color: #ffc107;">Take Quiz</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📖</div>
+                <p>No topics available in this section yet.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not general_sections and not class_specific_sections %}
+    <div class="section-card">
+        <div class="empty-state">
+            <div class="empty-state-icon">📁</div>
+            <p>No sections available yet. Check back later!</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

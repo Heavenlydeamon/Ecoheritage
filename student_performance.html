@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Performance Archive | EcoHeritage{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Heritage Bone & Ink Palette */
+    :root {
+        --bg-bone: #f4f1ea;
+        --bg-academic: #ebe7df;
+        --text-dark: #0e0e0e;
+        --accent-gold: #b38b4d;
+        --border-subtle: rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        background-color: var(--bg-bone);
+        color: var(--text-dark); /* Forced Black Text */
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    /* --- Header (Matching Home Hero) --- */
+    .perf-header {
+        padding: 140px 0 80px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 100px;
+    }
+
+    .perf-header h2 {
+        font-family: 'Tenor Sans', serif;
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+    }
+
+    .realm-label {
+        font-size: 0.7rem;
+        color: var(--accent-gold);
+        font-weight: 600;
+        letter-spacing: 5px;
+        display: block;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+    }
+
+    /* --- Metric Cards --- */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 0; /* Flush alignment like a grid */
+        border: 1px solid var(--border-subtle);
+        margin-bottom: 120px;
+    }
+
+    .stat-card {
+        background: transparent;
+        border-right: 1px solid var(--border-subtle);
+        padding: 60px 40px;
+        text-align: center;
+        transition: background 0.4s ease;
+    }
+
+    .stat-card:last-child { border-right: none; }
+
+    .stat-card:hover { background: var(--bg-academic); }
+
+    .stat-card h3 {
+        font-family: 'Tenor Sans', serif;
+        color: var(--text-dark);
+        font-size: 4rem;
+        margin: 10px 0;
+        line-height: 1;
+    }
+
+    /* --- Syllabus Mastery (Archival List Layout) --- */
+    .mastery-container {
+        margin-bottom: 140px;
+    }
+
+    .mastery-row {
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 40px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+    }
+
+    .mastery-row:hover {
+        padding-left: 20px;
+    }
+
+    .mastery-info { flex: 1; }
+    
+    .mastery-info h4 {
+        font-family: 'Tenor Sans', serif;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    .mastery-meta {
+        font-size: 0.75rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+
+    .mastery-visual {
+        width: 300px;
+        text-align: right;
+    }
+
+    .progress-minimal {
+        height: 1px; /* Ultra-thin heritage line */
+        background: rgba(0,0,0,0.1);
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .progress-bar-gold {
+        height: 100%;
+        background: var(--accent-gold);
+        transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    /* --- Recent Activity (Academic Sidebar Style) --- */
+    .activity-section {
+        background: var(--bg-academic);
+        padding: 80px 0;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .activity-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* --- Reveal System --- */
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+        .mastery-row { flex-direction: column; align-items: flex-start; }
+        .mastery-visual { width: 100%; text-align: left; margin-top: 20px; }
+        .stats-grid { grid-template-columns: 1fr; }
+        .stat-card { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="perf-header reveal">
+        <span class="realm-label">Digital Portfolio</span>
+        <h2>Scholastic Record</h2>
+        <p style="color: #555; max-width: 600px; margin: 0 auto;">A quantitative evaluation of your progress through the ecological and cultural archives of Kerala.</p>
+    </header>
+
+    <div class="stats-grid reveal">
+        <div class="stat-card">
+            <span class="realm-label">Missions</span>
+            <h3>{{ total_quizzes }}</h3>
+            <p class="small" style="letter-spacing: 2px;">Records Completed</p>
+        </div>
+        <div class="stat-card">
+            <span class="realm-label">Accuracy</span>
+            <h3>{{ avg_score|floatformat:1 }}%</h3>
+            <p class="small" style="letter-spacing: 2px;">Proficiency Rating</p>
+        </div>
+        <div class="stat-card">
+            <span class="realm-label">Sectors</span>
+            <h3>{{ section_performance|length }}</h3>
+            <p class="small" style="letter-spacing: 2px;">Subject Mastery</p>
+        </div>
+    </div>
+
+    <section class="mastery-container">
+        <span class="realm-label reveal">Archive Mastery</span>
+        <h3 class="mb-5 reveal" style="font-family: 'Tenor Sans'; letter-spacing: 3px;">Subject Breakdown</h3>
+
+        {% if section_performance %}
+            {% for section_name, data in section_performance.items %}
+            <div class="mastery-row reveal">
+                <div class="mastery-info">
+                    <h4>{{ section_name }}</h4>
+                    <div class="mastery-meta">
+                        {{ data.count }} Assessments &mdash; {{ data.score }} of {{ data.total }} Total Points
+                    </div>
+                </div>
+                <div class="mastery-visual">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="font-size: 0.7rem; letter-spacing: 1px;">Mastery Level</span>
+                        <span style="font-family: 'Tenor Sans'; color: var(--accent-gold);">{{ data.avg_percentage|floatformat:1 }}%</span>
+                    </div>
+                    <div class="progress-minimal">
+                        <div class="progress-bar-gold" style="width: {{ data.avg_percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="py-5 text-center reveal">
+                <p class="text-muted">No academic records found in this archive.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<section class="activity-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 reveal">
+                <span class="realm-label text-center">Recent Logs</span>
+                <h3 class="text-center mb-5" style="font-family: 'Tenor Sans'; letter-spacing: 3px;">Assessment History</h3>
+                
+                {% if quiz_attempts %}
+                    {% for attempt in quiz_attempts|slice:":8" %}
+                    <div class="activity-item">
+                        <div>
+                            <p class="mb-1" style="font-weight: 500; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">{{ attempt.section.name }}</p>
+                            <p class="small text-muted mb-0">{% if attempt.topic %}{{ attempt.topic.name }} &bull; {% endif %}{{ attempt.date_attempted|date:"d M Y" }}</p>
+                        </div>
+                        <div style="font-family: 'Tenor Sans'; color: var(--accent-gold); font-size: 1.2rem;">
+                            {{ attempt.score }}/{{ attempt.total_questions }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">No recent activity recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+{% endblock %}

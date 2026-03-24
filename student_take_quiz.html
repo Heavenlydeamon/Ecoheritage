@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Knowledge Assessment: {{ topic.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --accent-gold: #b38b4d;
+        --accent-green: #2d6a4f;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+    }
+
+    body {
+        background-color: #f8f9fa;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(179, 139, 77, 0.05) 0, transparent 50%), 
+            radial-gradient(at 100% 100%, rgba(45, 106, 79, 0.05) 0, transparent 50%);
+        min-height: 100vh;
+        padding-bottom: 120px; /* Space for floating bar */
+    }
+
+    .quiz-container {
+        max-width: 900px;
+        margin: 60px auto;
+        padding: 0 20px;
+    }
+
+    .quiz-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .quiz-header h1 {
+        font-family: 'Tenor Sans', serif;
+        font-size: 2.5rem;
+        color: var(--text-main);
+        margin-bottom: 15px;
+    }
+
+    .quiz-meta {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .meta-badge {
+        padding: 5px 15px;
+        border-radius: 20px;
+        background: white;
+        border: 1px solid #eee;
+    }
+
+    /* Question Cards */
+    .question-card {
+        background: white;
+        border-radius: 24px;
+        padding: 45px;
+        margin-bottom: 30px;
+        border: 1px solid #eee;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        transition: transform 0.3s ease;
+    }
+
+    .question-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .spirit-guide-hint {
+        background: rgba(179, 139, 77, 0.05);
+        border-left: 4px solid var(--accent-gold);
+        padding: 15px 25px;
+        border-radius: 0 12px 12px 0;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 0.95rem;
+        color: #555;
+        font-style: italic;
+    }
+
+    .question-num {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--accent-gold);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .question-text {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 35px;
+        line-height: 1.5;
+    }
+
+    /* Choices */
+    .choices-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .choice-item {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .choice-item input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .choice-box {
+        display: flex;
+        align-items: center;
+        padding: 20px 25px;
+        background: #fcfcfc;
+        border: 2px solid #f0f0f0;
+        border-radius: 16px;
+        transition: all 0.2s;
+    }
+
+    .choice-item:hover .choice-box {
+        border-color: var(--accent-gold);
+        background: #fffdf9;
+    }
+
+    .choice-item input:checked + .choice-box {
+        background: #fffdf4;
+        border-color: var(--accent-gold);
+        box-shadow: 0 4px 15px rgba(179, 139, 77, 0.1);
+    }
+
+    .choice-prefix {
+        width: 32px;
+        height: 32px;
+        background: #eee;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 800;
+        font-size: 0.8rem;
+        margin-right: 20px;
+        transition: all 0.2s;
+        color: #777;
+    }
+
+    .choice-item input:checked + .choice-box .choice-prefix {
+        background: var(--accent-gold);
+        color: white;
+    }
+
+    .choice-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #444;
+    }
+
+    /* Floating Progress Bar */
+    .floating-progress-bar {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 800px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 20px 35px;
+        border-radius: 24px;
+        border: 1px solid rgba(179, 139, 77, 0.2);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 1000;
+        gap: 40px;
+    }
+
+    .progress-info {
+        flex: 1;
+    }
+
+    .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--accent-gold);
+    }
+
+    .progress-rail {
+        height: 6px;
+        background: #eee;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-gold), #d4af37);
+        width: 0%;
+        transition: width 0.4s ease;
+    }
+
+    .btn-finalize {
+        background: linear-gradient(135deg, var(--accent-gold), #d4af37);
+        color: white !important;
+        padding: 15px 35px;
+        border-radius: 14px;
+        border: none;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 8px 15px rgba(179, 139, 77, 0.2);
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+    .btn-finalize:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(179, 139, 77, 0.3);
+    }
+
+    .btn-finalize.complete {
+        background: linear-gradient(135deg, var(--accent-green), #40916c);
+        box-shadow: 0 8px 15px rgba(45, 106, 79, 0.2);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(45, 106, 79, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <header class="quiz-header">
+        <span style="color: var(--accent-gold); font-weight: 800; letter-spacing: 4px; text-transform: uppercase; font-size: 0.75rem;">Certification Assessment</span>
+        <h1>{{ topic.name }}</h1>
+        <div class="quiz-meta">
+            <span class="meta-badge"><i class="fa-solid fa-layer-group me-2"></i>{{ topic.section.name }}</span>
+            <span class="meta-badge"><i class="fa-solid fa-bolt me-2"></i>{{ difficulty|title }}</span>
+            <span class="meta-badge"><i class="fa-solid fa-list-check me-2"></i>{{ questions|length }} Challenges</span>
+        </div>
+    </header>
+
+    {% if questions %}
+    <form method="post" id="quizForm">
+        {% csrf_token %}
+        
+        {% for question in questions %}
+        <div class="question-card">
+            <div class="spirit-guide-hint">
+                <i class="fa-solid fa-mountain-sun" style="font-size: 1.2rem; color: var(--accent-gold);"></i>
+                <span><strong>Guide's Whisper:</strong> "A true Guardian observes before they act. Choose wisely."</span>
+            </div>
+            
+            <span class="question-num">Task #{{ forloop.counter }}</span>
+            <div class="question-text">{{ question.text }}</div>
+            
+            <div class="choices-list">
+                {% for choice_num, choice_text in question.choices %}
+                <label class="choice-item">
+                    <input type="radio" name="question_{{ question.id }}" value="{{ choice_num }}" required onchange="updateProgress()">
+                    <div class="choice-box">
+                        <div class="choice-prefix">
+                            {% if forloop.counter == 1 %}A{% elif forloop.counter == 2 %}B{% elif forloop.counter == 3 %}C{% else %}D{% endif %}
+                        </div>
+                        <div class="choice-text">{{ choice_text }}</div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Floating Submission Bar -->
+        <div class="floating-progress-bar">
+            <div class="progress-info">
+                <div class="progress-meta">
+                    <span>Your Progress</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-rail">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+            <button type="submit" class="btn-finalize" id="submitBtn">Finalize Mission</button>
+        </div>
+    </form>
+    
+    {# Metadata for JS #}
+    <script id="total-questions-data" type="application/json">{{ questions|length }}</script>
+
+    {% else %}
+    <div class="question-card text-center" style="padding: 100px 40px;">
+        <i class="fa-solid fa-cloud-moon mb-4" style="font-size: 4rem; color: #ddd;"></i>
+        <h3 style="font-family: 'Tenor Sans', serif; margin-bottom: 20px;">The Archive is Quiet</h3>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">No challenges are available at this level of mastery yet.</p>
+        <a href="{% url 'student_study_topic' topic.id %}" class="btn-finalize" style="text-decoration: none; display: inline-block;">Return to Study</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateProgress() {
+        const totalElem = document.getElementById('total-questions-data');
+        if (!totalElem) return;
+        
+        const total = JSON.parse(totalElem.textContent);
+        const checkedCount = document.querySelectorAll('input[type="radio"]:checked').length;
+        const percentage = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+        
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (progressBar) progressBar.style.width = percentage + '%';
+        if (progressPercent) progressPercent.textContent = percentage + '%';
+        
+        if (percentage === 100) {
+            submitBtn.classList.add('complete');
+            submitBtn.textContent = 'Mission Ready →';
+        } else {
+            submitBtn.classList.remove('complete');
+            submitBtn.textContent = 'Finalize Mission';
+        }
+    }
+
+    // Confirm submit if incomplete
+    document.getElementById('quizForm')?.addEventListener('submit', function(e) {
+        const total = JSON.parse(document.getElementById('total-questions-data').textContent);
+        const checkedCount = document.querySelectorAll('input[type="radio"]:checked').length;
+        
+        if (checkedCount < total) {
+            if (!confirm(`Attention Guardian: ${total - checkedCount} tasks remain untouched. Proceed to finalize anyway?`)) {
+                e.preventDefault();
+            }
+        }
+    });
+
+    // Initialize progress on load (if back button used)
+    window.addEventListener('load', updateProgress);
+</script>
+{% endblock %}

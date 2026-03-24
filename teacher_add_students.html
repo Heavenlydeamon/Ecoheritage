@@ -1,0 +1,261 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Add Students - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    .form-card h3 {
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #333;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        color: #fff;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #ffffff;
+        cursor: pointer;
+    }
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--accent-green);
+    }
+    .btn-submit {
+        background: var(--accent-green);
+        color: #000;
+        font-weight: 700;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+    .btn-submit:hover {
+        background: #fff;
+        transform: scale(1.02);
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+    .data-table th {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        font-weight: 600;
+    }
+    .data-table td {
+        color: #fff;
+    }
+    .data-table tr:hover {
+        background: rgba(0, 255, 136, 0.05);
+    }
+    .badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .badge-success {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+    .badge-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        border: 1px solid #333;
+    }
+    .info-box {
+        background: rgba(0, 255, 136, 0.05);
+        border-left: 4px solid var(--accent-green);
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 0 10px 10px 0;
+    }
+    .info-box p {
+        color: var(--accent-green);
+        margin: 0;
+    }
+    .page-header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .page-header h2 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        color: var(--text-muted);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+    .empty-state a {
+        color: var(--accent-green);
+        text-decoration: none;
+    }
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h2>👨‍🎓 Add Students to Class</h2>
+        <p>Assign students to your classes</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="info-box">
+        <p>💡 <strong>Note:</strong> You can only add students to classes that belong to your institution.</p>
+    </div>
+
+    <!-- Add Student Form -->
+    <div class="form-card">
+        <h3>Add Student to Class</h3>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="student">Select Student</label>
+                <select id="student" name="student" required>
+                    <option value="">Choose a student</option>
+                    {% for student in available_students %}
+                    <option value="{{ student.user.id }}">
+                        {{ student.user.username }} 
+                        {% if student.student_class %}(Currently in: {{ student.student_class.name }}){% else %}(No class){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="class">Select Class</label>
+                <select id="class" name="class" required>
+                    <option value="">Choose a class</option>
+                    {% for class in managed_classes %}
+                    <option value="{{ class.id }}">{{ class.name }} ({{ class.institution.name }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-submit">Add Student to Class</button>
+        </form>
+    </div>
+
+    <!-- Available Students List -->
+    <div class="form-card">
+        <h3>Available Students</h3>
+        {% if available_students %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Current Class</th>
+                    <th>Institution</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in available_students %}
+                <tr>
+                    <td><strong>{{ student.user.username }}</strong></td>
+                    <td>
+                        {% if student.student_class %}
+                        <span class="badge badge-success">{{ student.student_class.name }}</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Not assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if student.institution %}
+                        {{ student.institution.name }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No students available in your institution.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Your Classes -->
+    <div class="form-card">
+        <h3>Your Classes</h3>
+        {% if managed_classes %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Class Name</th>
+                    <th>Institution</th>
+                    <th>Students Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in managed_classes %}
+                <tr>
+                    <td><strong>{{ class.name }}</strong></td>
+                    <td>{{ class.institution.name }}</td>
+                    <td>{{ class.students.count }} students</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>You haven't created any classes yet. <a href="{% url 'teacher_manage_classes' %}">Create a class first</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

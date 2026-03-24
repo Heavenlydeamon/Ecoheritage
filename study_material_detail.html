@@ -1,0 +1,242 @@
+{% load markdown_extras %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ material.title }} | EcoHeritage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-bone: #f4f1ea;
+            --bg-charcoal: #0e0e0e;
+            --card-white: #ffffff;
+            --accent-gold: #b38b4d;
+            --accent-green: #2d6a4f;
+            --text-main: #1a1a1a;
+            --text-muted: #757575;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-bone);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: 1.8;
+        }
+
+        /* --- Minimal Navigation Bar --- */
+        .top-nav {
+            background: var(--bg-charcoal);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-brand {
+            font-family: 'Tenor Sans', serif;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: 2px;
+            font-size: 1.1rem;
+        }
+
+        .nav-brand span {
+            color: var(--accent-gold);
+        }
+
+        .btn-exit {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .btn-exit:hover {
+            opacity: 1;
+            color: var(--accent-gold);
+        }
+
+        /* --- Centralized Layout --- */
+        .page-wrapper {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* --- Banner --- */
+        .banner-wrapper {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* --- Article Paper --- */
+        .study-paper {
+            background: var(--card-white);
+            padding: 60px 80px;
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.03);
+        }
+
+        .category-label {
+            display: inline-block;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            margin-bottom: 20px;
+        }
+
+        /* --- Typography (The "EcoLegacy" Style) --- */
+        .markdown-content h1 {
+            font-family: 'Tenor Sans', serif;
+            font-size: 3.2rem;
+            color: var(--bg-charcoal);
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        .markdown-content h2 {
+            font-family: 'Tenor Sans', serif;
+            color: var(--accent-green);
+            font-size: 2rem;
+            margin-top: 2.5em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--bg-bone);
+        }
+
+        .markdown-content h3 {
+            color: var(--accent-gold);
+            font-size: 1.5rem;
+            margin-top: 1.8em;
+        }
+
+        .markdown-content p {
+            font-size: 1.2rem;
+            color: #2c2c2c;
+            margin-bottom: 1.6em;
+            text-align: left; /* Aligned as per EcoLegacy screenshot */
+        }
+
+        .markdown-content strong {
+            color: var(--bg-charcoal);
+            font-weight: 700;
+        }
+
+        .markdown-content blockquote {
+            border-left: 5px solid var(--accent-gold);
+            background: var(--bg-bone);
+            padding: 25px 35px;
+            margin: 40px 0;
+            font-style: italic;
+            color: #555;
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* --- Action Footer --- */
+        .study-footer {
+            margin-top: 60px;
+            padding: 40px;
+            background: var(--bg-charcoal);
+            border-radius: 16px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .btn-quiz {
+            background: var(--accent-gold);
+            color: #fff;
+            padding: 15px 45px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-quiz:hover {
+            background: #96743d;
+            transform: translateY(-2px);
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            .study-paper {
+                padding: 40px 25px;
+            }
+            .markdown-content h1 {
+                font-size: 2.2rem;
+            }
+            .banner-image {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="{% url 'home' %}" class="nav-brand">ECO<span>HERITAGE</span></a>
+        <a href="{% url 'student_dashboard' %}" class="btn-exit">
+            <i class="fa-solid fa-xmark"></i> Exit Reading
+        </a>
+    </nav>
+
+    <div class="page-wrapper">
+        
+        {% if material.image_url %}
+        <div class="banner-wrapper">
+            <img src="{{ material.image_url }}" alt="{{ material.title }}" class="banner-image">
+        </div>
+        {% endif %}
+
+        <article class="study-paper">
+            <span class="category-label">Nature & Biodiversity</span>
+            
+            <div class="markdown-content">
+                {{ material.content_text|markdown|safe }}
+            </div>
+        </article>
+
+        <div class="study-footer">
+            <h3 style="font-family: 'Tenor Sans', serif; margin-bottom: 10px;">Module Complete</h3>
+            <p style="opacity: 0.7; font-size: 0.95rem;">Ready to prove your understanding of this topic?</p>
+            <a href="{% url 'challenge_mode' %}" class="btn-quiz">Start Assessment</a>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="{% url 'student_dashboard' %}" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem;">
+                <i class="fa-solid fa-arrow-left"></i> Return to Dashboard
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

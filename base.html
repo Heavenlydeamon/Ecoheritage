@@ -1,0 +1,340 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoHeritage Kerala{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Tenor+Sans&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #0e0e0e;
+            /* Rich Charcoal */
+            --bg-bone: #f4f1ea;
+            /* Warm Paper/Bone */
+            --text-dark: #1a1a1a;
+            --text-light: #f4f1ea;
+            --accent-gold: #b38b4d;
+            /* Muted Heritage Gold */
+            --border-subtle: rgba(0, 0, 0, 0.08);
+
+            /* Mapping to old variables to prevent breaking structure where variables are used directly */
+            --bg-black: #0e0e0e;
+            /* Re-mapped to charcoal */
+            --card-gray: #ffffff;
+            /* Re-mapped to white for cleaner cards */
+            --accent-green: #2E8B57;
+            /* Sea Green for environment overlap */
+            --text-muted: #757575;
+        }
+
+        body {
+            background-color: var(--bg-bone);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        .navbar-brand {
+            font-family: 'Tenor Sans', serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        /* --- Minimal Navigation --- */
+        .navbar {
+            background: rgba(244, 241, 234, 0.98) !important;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: var(--text-dark) !important;
+            font-size: 1.1rem;
+        }
+
+        .nav-link {
+            color: var(--text-dark) !important;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0 10px;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-gold) !important;
+        }
+
+        /* --- Minimalist Buttons --- */
+        .btn-minimal {
+            padding: 14px 35px;
+            border: 1px solid var(--text-dark);
+            background: transparent;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            transition: all 0.4s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-minimal:hover {
+            background: var(--text-dark);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-gold {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .btn-gold:hover {
+            background: var(--accent-gold);
+            color: #fff;
+        }
+
+        /* Legacy Button overrides for components still using Bootstrap classes */
+        .btn-success {
+            background: var(--text-dark);
+            color: #fff;
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            padding: 10px 25px;
+            border-radius: 0;
+            transition: all 0.4s;
+        }
+
+        .btn-success:hover {
+            background: var(--accent-gold);
+            color: #fff;
+        }
+
+        .btn-outline-success,
+        .btn-outline-danger {
+            border: 1px solid var(--text-dark);
+            color: var(--text-dark);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            border-radius: 0;
+            padding: 10px 25px;
+        }
+
+        .btn-outline-success:hover,
+        .btn-outline-danger:hover {
+            background: var(--text-dark);
+            color: #fff;
+        }
+
+        .btn-sm.rounded-pill {
+            border-radius: 0 !important;
+            /* Remove pills */
+        }
+
+        /* --- Section Cards (For Dashboard/Form pages) --- */
+        .section-card {
+            background: var(--card-gray);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 40px 0;
+            background: var(--bg-deep);
+            color: rgba(244, 241, 234, 0.5);
+            letter-spacing: 2px;
+            font-size: 0.7rem;
+            border-top: none;
+            margin-top: 80px;
+        }
+
+        footer .text-secondary {
+            color: rgba(244, 241, 234, 0.5) !important;
+            transition: color 0.3s;
+        }
+
+        footer .text-secondary:hover {
+            color: var(--accent-gold) !important;
+        }
+
+        /* --- Scroll Reveals --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Utility overrides */
+        .text-white {
+            color: var(--text-dark) !important;
+        }
+
+        /* Ensure text remains white on dark backgrounds */
+        .bg-dark .text-white,
+        .bg-black .text-white,
+        .bg-charcoal .text-white,
+        .bg-deep .text-white,
+        footer .text-white,
+        .hero-section .text-white,
+        .video-hero .text-white,
+        .module-card .text-white,
+        .ai-hero-card .text-white,
+        .admin-sidebar .text-white,
+        .card-header.bg-primary .text-white,
+        .card-header.bg-success .text-white,
+        .card-header.bg-info .text-white,
+        .card-header.bg-danger .text-white,
+        .badge.bg-primary .text-white,
+        .badge.bg-success .text-white,
+        .badge.bg-info .text-white,
+        .badge.bg-danger .text-white,
+        .btn-primary .text-white,
+        .btn-success .text-white,
+        .btn-info .text-white,
+        .btn-danger .text-white {
+            color: #fff !important;
+        }
+
+        .text-success {
+            color: var(--accent-gold) !important;
+        }
+
+        .bg-dark-custom {
+            background-color: var(--card-gray);
+        }
+
+        .border-custom {
+            border: 1px solid var(--border-subtle);
+        }
+
+        .rounded-custom {
+            border-radius: 4px !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                ECO<span style="color:var(--accent-gold)">LEGACY</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavCollapse"
+                style="border: none; outline: none; box-shadow: none;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNavCollapse">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% block nav_links %}
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'class_view' %}">Class</a></li>
+                    <li class="nav-item px-3 fw-bold"
+                        style="font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;">
+                        Hi, {{ user.username }}
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="btn-minimal py-2 px-3 ms-2">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a href="{% url 'login' %}" class="nav-link">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'register' %}" class="btn-minimal btn-gold py-2 px-4 ms-3">Join Archive</a>
+                    </li>
+                    {% endif %}
+                    {% endblock %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4">
+                <p class="m-0">&copy; 2026 ECOHERITAGE KERALA &mdash; PRESERVING THE LEGACY</p>
+                <div class="d-flex gap-4">
+                    <a href="#" class="text-secondary fs-6"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-secondary fs-6"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-secondary fs-6"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Scroll Reveal Observer
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        // Apply to elements after DOM load
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        });
+
+        // Set up CSRF token for all AJAX requests globally
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

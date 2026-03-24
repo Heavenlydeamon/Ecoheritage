@@ -1,0 +1,471 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoHeritage Kerala | Digital Archive</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Tenor+Sans&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #0e0e0e;
+            /* Rich Charcoal */
+            --bg-bone: #f4f1ea;
+            /* Warm Paper/Bone */
+            --text-dark: #1a1a1a;
+            --text-light: #f4f1ea;
+            --accent-gold: #b38b4d;
+            /* Muted Heritage Gold */
+            --border-subtle: rgba(0, 0, 0, 0.07);
+        }
+
+        body {
+            background-color: var(--bg-bone);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        .navbar-brand {
+            font-family: 'Tenor Sans', serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        /* --- Full Width Immersive Hero --- */
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: var(--bg-deep);
+        }
+
+        .hero-video-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: brightness(0.4) grayscale(100%);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 10vw, 6rem);
+            margin-bottom: 15px;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        /* --- Minimal Navigation --- */
+        .navbar {
+            background: transparent !important;
+            padding: 30px 0;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 1000;
+        }
+
+        .navbar.scrolled {
+            background: rgba(244, 241, 234, 0.98) !important;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .navbar.scrolled .navbar-brand,
+        .navbar.scrolled .nav-link {
+            color: var(--text-dark) !important;
+        }
+
+        .navbar-brand {
+            color: var(--text-light) !important;
+            font-size: 1.1rem;
+        }
+
+        .nav-link {
+            color: var(--text-light) !important;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* --- Section Layouts --- */
+        .section-padding {
+            padding: 140px 0;
+        }
+
+        .realm-label {
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            letter-spacing: 5px;
+            display: block;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .img-container {
+            position: relative;
+            overflow: hidden;
+            background: #ddd;
+        }
+
+        .img-minimal {
+            width: 100%;
+            height: 750px;
+            object-fit: cover;
+            filter: grayscale(100%);
+            transition: filter 1.2s ease, transform 2s ease;
+        }
+
+        .realm-wrapper:hover .img-minimal {
+            filter: grayscale(0%);
+            transform: scale(1.04);
+        }
+
+        /* --- Buttons --- */
+        .btn-minimal {
+            padding: 16px 45px;
+            border: 1px solid var(--accent-gold);
+            background: transparent;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            transition: all 0.4s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .btn-minimal:hover {
+            background: var(--accent-gold);
+            transform: translateY(-2px);
+        }
+
+        .btn-hero {
+            border-color: var(--text-light);
+            color: var(--text-light);
+        }
+
+        .btn-hero:hover {
+            background: var(--text-light);
+            color: var(--bg-deep);
+        }
+
+        /* --- Academic Block --- */
+        .academic-section {
+            background-color: #ebe7df;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* --- Animations --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        footer {
+            padding: 100px 0;
+            background: var(--bg-deep);
+            color: rgba(244, 241, 234, 0.3);
+            text-align: center;
+            letter-spacing: 3px;
+            font-size: 0.65rem;
+        }
+
+        /* --- Folklore Section --- */
+        .folklore-list .list-group-item {
+            background: transparent;
+            border: none;
+            border-left: 2px solid rgba(244, 241, 234, 0.1);
+            padding: 1rem 1.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 0;
+            margin-bottom: 5px;
+        }
+
+        .folklore-list .list-group-item:hover {
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.02);
+            border-left-color: rgba(179, 139, 77, 0.5);
+        }
+
+        .folklore-list .list-group-item.active {
+            background: rgba(179, 139, 77, 0.1);
+            color: var(--accent-gold);
+            border-left-color: var(--accent-gold);
+        }
+
+        .folklore-accordion {
+            --bs-accordion-bg: transparent;
+            --bs-accordion-color: var(--text-light);
+            --bs-accordion-border-color: rgba(255, 255, 255, 0.1);
+            --bs-accordion-btn-color: var(--text-light);
+            --bs-accordion-btn-bg: transparent;
+            --bs-accordion-btn-focus-box-shadow: none;
+            --bs-accordion-active-color: var(--accent-gold);
+            --bs-accordion-active-bg: rgba(255, 255, 255, 0.02);
+        }
+
+        .folklore-accordion .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .folklore-accordion .accordion-button:not(.collapsed)::after {
+            filter: sepia(1) saturate(3) hue-rotate(35deg) invert(0.2);
+        }
+
+        .folklore-accordion .accordion-button {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 1.25rem 1rem;
+        }
+
+        .folklore-accordion .accordion-body {
+            color: rgba(244, 241, 234, 0.7);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            padding-bottom: 1.5rem;
+        }
+
+        @media (max-width: 991px) {
+            .img-minimal {
+                height: 450px;
+            }
+
+            .section-padding {
+                padding: 80px 0;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="/">ECO<span style="color:var(--accent-gold)">LEGACY</span></a>
+
+            <div class="ms-auto d-flex align-items-center">
+                {% if user.is_authenticated %}
+                <a class="nav-link d-none d-md-block" href="{% url 'class_view' %}">Profile</a>
+                <a href="{% url 'logout' %}" class="btn-minimal py-2 px-3 ms-3"
+                    style="font-size: 0.6rem; border-color: inherit;">Logout</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="nav-link">Login</a>
+                <a href="{% url 'register' %}" class="btn-minimal py-2 px-4 ms-3 btn-hero">Join</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <video autoplay muted loop playsinline class="hero-video-bg">
+            <source src="{% static 'video/hero.mp4' %}" type="video/mp4">
+        </video>
+        <div class="container hero-content text-center text-white">
+            <span class="realm-label" style="color: var(--text-light); opacity: 0.6;">God's Own Conservatory</span>
+            <h1 class="hero-title text-white">KERALA<br>ARCHIVE</h1>
+            <p class="mb-5"
+                style="max-width: 550px; margin: 0 auto; opacity: 0.8; font-weight: 300; letter-spacing: 1px;">A digital
+                preservation of ecological wonders and the ancient lineages of the Malabar coast.</p>
+            <a href="#realm-1" class="btn-minimal btn-hero text-white">Explore Archive</a>
+        </div>
+    </section>
+
+    <section class="section-padding" id="realm-1">
+        <div class="container">
+            <div class="row align-items-center realm-wrapper">
+                <div class="col-lg-7 reveal">
+                    <div class="img-container">
+                        <img src="{% static 'images/westernghats.jpg' %}" class="img-minimal" alt="Environment">
+                    </div>
+                </div>
+                <div class="col-lg-4 offset-lg-1 reveal">
+                    <span class="realm-label">Chapter 01</span>
+                    <h2 class="mb-4">Natural<br>Thresholds</h2>
+                    <p class="text-muted mb-5">An inquiry into the micro-climates of the Silent Valley and the
+                        monsoon-driven biodiversity of the Western Ghats.</p>
+                    <a href="{% url 'environment' %}" class="btn-minimal">Study Ecology</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" style="background-color: #f0ede6;">
+        <div class="container">
+            <div class="row align-items-center flex-row-reverse realm-wrapper">
+                <div class="col-lg-7 reveal">
+                    <div class="img-container">
+                        <img src="{% static 'images/Wildlife.jpg' %}" class="img-minimal" alt="Heritage">
+                    </div>
+                </div>
+                <div class="col-lg-4 reveal">
+                    <span class="realm-label">Chapter 02</span>
+                    <h2 class="mb-4">Ancient<br>Lineages</h2>
+                    <p class="text-muted mb-5">Tracing the evolution of the maritime spice routes and the prehistoric
+                        lithic records found within the Edakkal inscriptions.</p>
+                    <a href="{% url 'heritage' %}" class="btn-minimal">View Chronicles</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding">
+        <div class="container">
+            <div class="row align-items-center realm-wrapper">
+                <div class="col-lg-7 reveal">
+                    <div class="img-container">
+                        <img src="{% static 'images/artforms.jpg' %}" class="img-minimal" alt="Culture">
+                    </div>
+                </div>
+                <div class="col-lg-4 offset-lg-1 reveal">
+                    <span class="realm-label">Chapter 03</span>
+                    <h2 class="mb-4">Cultural<br>Performatives</h2>
+                    <p class="text-muted mb-5">A visual documentation of the mudras, rhythmic disciplines, and the
+                        martial grace of Kalaripayattu.</p>
+                    <a href="{% url 'cultural' %}" class="btn-minimal">Master Forms</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" style="background-color: #f4f1ea;">
+        <div class="container">
+            <div class="row align-items-center flex-row-reverse realm-wrapper">
+                <div class="col-lg-7 reveal">
+                    <div class="img-container">
+                        <img src="{% static 'images/challenge_mode.png' %}" class="img-minimal" alt="Challenge Mode">
+                    </div>
+                </div>
+                <div class="col-lg-4 reveal">
+                    <span class="realm-label">Interlude</span>
+                    <h2 class="mb-4">Trial of<br>Knowledge</h2>
+                    <p class="text-muted mb-4">Measure your understanding against the ancient archives. Our adaptive challenge system tests your mastery of Kerala's heritage in real-time.</p>
+                    <p class="text-muted mb-5">Compete with fellow scholars to climb the leaderboard and prove your expertise in the ecological and cultural chronicles of our land.</p>
+                    <a href="{% url 'challenge_mode' %}" class="btn-minimal">Enter Arena</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" style="background-color: var(--bg-deep); color: var(--text-light);"
+        id="folklore-section">
+        <div class="container">
+            <div class="row align-items-center realm-wrapper">
+                <div class="col-lg-7 reveal">
+                    <div class="img-container" style="border-radius: 8px;">
+                        <img src="{% static 'images/Kerala_Mythology.jpg' %}" class="img-minimal"
+                            alt="Myths and Folklore" style="filter: brightness(0.6) grayscale(80%);">
+                </div>
+                <div class="col-lg-4 offset-lg-1 reveal text-white">
+                    <span class="realm-label" style="color: var(--accent-gold);">Chapter 04</span>
+                    <h2 class="mb-4 text-white">Myths &<br>Folklore</h2>
+                    <p class="mb-5" style="color: rgba(244, 241, 234, 0.7); max-width: 90%;">Delve deeper into the
+                        esoteric traditions, haunting legends, and foundational myths that shaped the psychological and
+                        cultural landscape of ancient Kerala.</p>
+                    <a href="{% url 'folklore' %}" class="btn-minimal btn-hero text-white"
+                        style="border-color: var(--accent-gold); color: var(--accent-gold);">Explore Lore</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding academic-section">
+        <div class="container text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 reveal">
+                    <span class="realm-label">Institutional Portal</span>
+                    <h2 class="mb-5">Syllabus Integration</h2>
+                    <div class="row text-start mt-5">
+                        <div class="col-md-6 mb-4">
+                            <h6 class="fw-bold mb-3" style="letter-spacing: 2px;">FOR EDUCATORS</h6>
+                            <p class="small text-muted">A dedicated interface for curated assessments and real-time
+                                performance analytics for heritage studies.</p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h6 class="fw-bold mb-3" style="letter-spacing: 2px;">FOR SCHOLARS</h6>
+                            <p class="small text-muted">Bridging textbook theory with gamified immersion modules
+                                designed for the modern Kerala curriculum.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 ECOHERITAGE KERALA &mdash; PRESERVING THE LEGACY</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navigation Scroll Logic
+        window.addEventListener('scroll', function () {
+            const nav = document.getElementById('mainNav');
+            if (window.scrollY > 80) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Intersection Observer for Scroll Reveals
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+
+</body>
+
+</html>

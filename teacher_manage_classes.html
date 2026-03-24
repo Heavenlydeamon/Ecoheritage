@@ -1,0 +1,678 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Manage Classes - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Theme Variables Overrides */
+    :root {
+        --heritage-cream: #fdfbf7;
+        --heritage-gold: #a67c52;
+        --heritage-gold-dark: #8b6542;
+        --input-bg: #f5f2eb;
+        --glass-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        --ai-gradient: linear-gradient(135deg, #7c4dff 0%, #448aff 100%);
+        --ai-glow: 0 0 15px rgba(124, 77, 255, 0.3);
+    }
+
+    body {
+        background-color: var(--heritage-cream) !important;
+    }
+
+    .dashboard-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-top: 20px;
+    }
+
+    /* Page Heading Style */
+    .premium-page-title {
+        font-family: 'Tenor Sans', serif;
+        font-size: 2.2rem;
+        color: #1a1a1a;
+        margin-bottom: 5px;
+        position: relative;
+        display: inline-block;
+    }
+    .premium-page-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background: #ccc;
+    }
+
+    /* Tab Styling */
+    .tabs-premium {
+        display: flex;
+        gap: 30px;
+        margin: 40px 0 30px 0;
+    }
+    .tab-p {
+        background: none;
+        border: none;
+        font-family: 'Tenor Sans', serif;
+        font-size: 1.1rem;
+        color: #888;
+        cursor: pointer;
+        padding-bottom: 5px;
+        transition: all 0.3s;
+        text-transform: capitalize;
+    }
+    .tab-p.active {
+        color: var(--heritage-gold);
+        border-bottom: 2px solid var(--heritage-gold);
+    }
+
+    /* Premium Card Style */
+    .card-premium {
+        background: #fff;
+        border: none;
+        border-radius: 24px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: var(--glass-shadow);
+    }
+    .card-title-premium {
+        font-family: 'Tenor Sans', serif;
+        font-size: 1.6rem;
+        color: var(--heritage-gold);
+        margin-bottom: 25px;
+    }
+    .card-subtitle-p {
+        font-size: 0.9rem;
+        color: #888;
+        margin-bottom: 20px;
+    }
+
+    /* Form Elements */
+    .form-group-p {
+        margin-bottom: 25px;
+    }
+    .label-p {
+        display: block;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .input-p {
+        width: 100%;
+        padding: 14px 20px;
+        background-color: var(--input-bg);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: 14px;
+        font-size: 1rem;
+        color: #333;
+        transition: all 0.3s;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .input-p:focus {
+        outline: none;
+        background-color: #fff;
+        border-color: var(--heritage-gold);
+        box-shadow: 0 0 0 4px rgba(166, 124, 82, 0.1);
+    }
+    .input-p::placeholder {
+        color: #aaa;
+        font-style: italic;
+    }
+
+    /* Checkbox Style */
+    .checkbox-p {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 20px 0;
+        cursor: pointer;
+    }
+    .checkbox-p input {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--heritage-gold);
+    }
+    .checkbox-p label {
+        font-weight: 500;
+        color: #444;
+        cursor: pointer;
+    }
+
+    /* AI Buttons */
+    .btn-ai-glow {
+        background: var(--ai-gradient);
+        color: #fff !important;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        box-shadow: var(--ai-glow);
+        text-decoration: none;
+    }
+    .btn-ai-glow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(124, 77, 255, 0.5);
+    }
+
+    /* Grid for middle section */
+    .creation-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .topic-item-p {
+        background: #fdfbf7;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+    .topic-item-p h5 {
+        font-family: 'Tenor Sans', serif;
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    /* Action Buttons */
+    .btn-add-p, .btn-remove-p {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid transparent;
+        transition: all 0.3s;
+    }
+    .btn-add-p {
+        background: #1a1a1a;
+        color: #fff;
+    }
+    .btn-remove-p {
+        background: #fff;
+        border-color: #f44336;
+        color: #f44336;
+        margin-left: 10px;
+    }
+    .btn-add-p:hover { transform: scale(1.05); }
+    .btn-remove-p:hover { background: #feebeb; }
+
+    /* Main Submit Button */
+    .btn-primary-heritage {
+        display: block;
+        width: 300px;
+        margin: 50px auto;
+        background: linear-gradient(to right, #a67c52, #c19a6b);
+        color: #fff;
+        font-family: 'Tenor Sans', serif;
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+        padding: 18px;
+        border: none;
+        border-radius: 50px;
+        box-shadow: 0 10px 30px rgba(166, 124, 82, 0.3);
+        transition: all 0.4s;
+        text-align: center;
+    }
+    .btn-primary-heritage:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(166, 124, 82, 0.4);
+        color: #fff;
+    }
+
+    /* Spinner */
+    .loading-spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s infinite linear;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .nested-form-premium {
+        display: none;
+    }
+    .nested-form-premium.active {
+        display: block;
+    }
+
+    .divider-p {
+        height: 1px;
+        background: rgba(0,0,0,0.05);
+        margin: 30px 0;
+    }
+
+    /* Badge Styles */
+    .badge-p {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-approved { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .badge-pending { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
+    .badge-default { background: #f5f5f5; color: #757575; border: 1px solid #e0e0e0; }
+
+    @media (max-width: 992px) {
+        .creation-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header" style="background:none; border:none; text-align:left; padding-left:0;">
+        <h2 class="premium-page-title">Create New Class</h2>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Tabs -->
+    <div class="tabs-premium">
+        <button class="tab-p active" onclick="switchTab('create')">Create Class</button>
+        <button class="tab-p" onclick="switchTab('classes')">Your Classes</button>
+    </div>
+
+    <!-- Create Class Tab -->
+    <div id="tab-create" class="tab-content active">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+
+            <!-- Card 1: Class Details -->
+            <div class="card-premium">
+                <h3 class="card-title-premium">Class Details</h3>
+                
+                <div class="form-group-p">
+                    <label class="label-p" for="name">Class Name</label>
+                    <input type="text" class="input-p" id="name" name="name" placeholder="10-A, Grade 11 Science" required>
+                </div>
+                
+                <div class="form-group-p">
+                    <label class="label-p" for="subject">Subject</label>
+                    <input type="text" class="input-p" id="subject" name="subject" placeholder="e.g., Mathematics, Science, Social Studies">
+                </div>
+                
+                <div class="form-group-p">
+                    <label class="label-p" for="institution">Institution</label>
+                    <select class="input-p" id="institution" name="institution" required>
+                        <option value="">Select Institution</option>
+                        {% for institution in institutions %}
+                        <option value="{{ institution.id }}">{{ institution.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="checkbox-p">
+                    <input type="checkbox" id="create_with_class" name="create_with_class" onchange="toggleClassContent()">
+                    <label for="create_with_class">Check Subject (Section), Topics, and Study Materials along with this class</label>
+                </div>
+            </div>
+
+            <!-- Card 2 & 3: Nested Content (Subject & Topics) -->
+            <div id="class-content-form" class="nested-form-premium">
+                <div class="creation-grid">
+                    <!-- Left: Subject Details -->
+                    <div class="card-premium">
+                        <h3 class="card-title-premium">Create Subject & Content for This Class</h3>
+                        <p class="card-subtitle-p">Optionally create a subject (section) with topics and with topics and study materials for this class</p>
+                        
+                        <div class="form-group-p">
+                            <label class="label-p" for="section_name">Subject Name</label>
+                            <input type="text" class="input-p" id="section_name" name="section_name" placeholder="e.g., Social Science, Science, Mathematics">
+                        </div>
+                        
+                        <div class="form-group-p">
+                            <label class="label-p" for="section_description">Subject Description</label>
+                            <textarea class="input-p" id="section_description" name="section_description" placeholder="Brief description of this subject" style="min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Right: Course Topics -->
+                    <div class="card-premium">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="card-title-premium mb-0">Course Topics</h3>
+                            <button type="button" class="btn-ai-glow" id="suggestTopicsBtn">
+                                <i class="fas fa-magic"></i> Suggest Topics
+                            </button>
+                        </div>
+                        <p class="card-subtitle-p">Topics (up to 5)</p>
+                        
+                        <div id="topics-container">
+                            <div class="topic-item-p">
+                                <h5>Topic 1</h5>
+                                <input type="text" class="input-p mb-2" name="topic_name_1" placeholder="Topic Name">
+                                <input type="text" class="input-p" name="topic_description_1" placeholder="Topic Description">
+                            </div>
+                            <div class="topic-item-p">
+                                <h5>Topic 2</h5>
+                                <input type="text" class="input-p mb-2" name="topic_name_2" placeholder="Topic Name">
+                                <input type="text" class="input-p" name="topic_description_2" placeholder="Topic Description">
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" class="btn-add-p" onclick="addTopic()">+ Add Topic</button>
+                            <button type="button" class="btn-remove-p" onclick="removeTopic()">- Remove Topic</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Study Materials (Bottom) -->
+                <div class="card-premium mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.5rem;">📄</span>
+                            <h3 class="card-title-premium mb-0">Add Study Materials</h3>
+                        </div>
+                        <button type="button" class="btn-ai-glow" id="generateContentBtn">
+                            <i class="fas fa-sparkles"></i> Auto-generate Content
+                        </button>
+                    </div>
+                    <p class="card-subtitle-p">Add study materials to the first topic (optional)</p>
+                    
+                    <div class="form-group-p">
+                        <label class="label-p" for="material_title">Material Title</label>
+                        <input type="text" class="input-p" id="material_title" name="material_title" placeholder="e.g., Introduction to Algebra">
+                    </div>
+                    
+                    <div class="form-group-p">
+                        <label class="label-p" for="material_content">Content Text</label>
+                        <textarea class="input-p" id="material_content" name="material_content" placeholder="Enter the study material content here... (Minimum 100 characters required for AI quiz generation)" style="min-height: 150px; background-color: #f1ede4;"></textarea>
+                    </div>
+                    
+                    <div class="form-group-p">
+                        <label class="label-p" for="pdf_file">Upload PDF (Optional)</label>
+                        <div class="input-p" style="display: flex; align-items: center; justify-content: space-between;">
+                            <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" style="border:none; background:none; padding:0;">
+                        </div>
+                        <small style="color: #888; display: block; margin-top: 8px;">Upload a PDF file - text will be automatically extracted</small>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary-heritage">Create Class</button>
+        </form>
+    </div>
+
+    <!-- Classes List Tab -->
+    <div id="tab-classes" class="tab-content">
+        {% if classes %}
+        {% for class in classes %}
+        <div class="card-premium">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <div>
+                    <h3 class="card-title-premium mb-1">{{ class.name }}</h3>
+                    <span style="color: #888; font-size: 0.9rem;">{{ class.subject }} | {{ class.institution.name }}</span>
+                </div>
+                <div class="material-actions">
+                    <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this class?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="class_id" value="{{ class.id }}">
+                        <button type="submit" class="btn-remove-p">Delete Class</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sections/Subjects for this class -->
+            {% with sections=class.class_sections.all %}
+            {% if sections %}
+            <div class="hierarchy-section">
+                <h4 style="font-family: 'Tenor Sans', serif; color: var(--heritage-gold); margin-bottom: 20px;">📚 Subjects</h4>
+                {% for section in sections %}
+                <div class="topic-item-p" style="margin-left: 20px; border-left: 3px solid var(--heritage-gold);">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 style="margin-bottom:0;">{{ section.name }}</h5>
+                        <span class="badge" style="background: rgba(166, 124, 82, 0.1); color: var(--heritage-gold); border: 1px solid var(--heritage-gold);">{{ section.topics.count }} Topics</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">{{ section.description|truncatewords:20 }}</p>
+                    
+                    <!-- Topics for this section -->
+                    {% with topics=section.topics.all %}
+                    {% if topics %}
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.05);">
+                        <h6 style="color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Topics & Materials:</h6>
+                        {% for topic in topics %}
+                        <div style="margin-bottom: 20px; padding: 15px; background: rgba(245, 242, 235, 0.5); border-radius: 12px;">
+                                <span style="font-weight: 600; color: #333; display: block; margin-bottom: 10px;">{{ topic.name }}</span>
+                            
+                            <!-- Study Materials for this topic -->
+                            {% with materials=topic.study_materials.all %}
+                            {% if materials %}
+                            <div style="margin-top: 10px; display: grid; gap: 10px;">
+                                {% for material in materials %}
+                                <div style="background: #fff; border: 1px solid rgba(0,0,0,0.05); border-radius: 10px; padding: 15px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <span style="font-size: 14px; color: #333; font-weight: 500;">{{ material.title }}</span>
+                                            <div style="font-size: 12px; color: #888; margin-top: 5px;">
+                                                {{ material.content_text|length }} chars
+                                                {% if material.image %} | 🖼️ Image{% endif %}
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 8px;">
+                                            <a href="{% url 'teacher_generate_quiz_from_material' material.id %}" class="btn-ai-glow" style="padding: 5px 12px; font-size: 0.8rem;">
+                                                🤖 Generate Quiz
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quiz Status -->
+                                    {% with quiz=material.ai_generated_quizzes.first %}
+                                    {% if quiz %}
+                                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 12px; color: #666;">
+                                        📊 AI Quiz: 
+                                        <span class="badge-p {% if quiz.status == 'approved' %}badge-approved{% elif quiz.status == 'pending' %}badge-pending{% else %}badge-default{% endif %}">
+                                            {{ quiz.status|title }}
+                                        </span>
+                                        | {{ quiz.questions.count }} Questions
+                                    </div>
+                                    {% else %}
+                                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 11px; color: var(--heritage-gold);">
+                                        ✨ No quiz yet - Click "Generate Quiz" to create AI assessment
+                                    </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div style="margin-top: 10px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 10px; text-align: center;">
+                                <span style="color: #999; font-size: 12px;">No study materials. <a href="{% url 'teacher_manage_study_materials_topic' topic.id %}" style="color: var(--heritage-gold); font-weight: 600;">Add Material</a></span>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="padding: 30px; text-align: center; color: #999; background: #fafafa; border-radius: 15px;">
+                <p>No subjects yet. Create topics to add study materials.</p>
+            </div>
+            {% endif %}
+            {% endwith %}
+            
+            <div class="mt-4 pt-3" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                <a href="{% url 'teacher_class_detail' class.id %}" class="btn-add-p" style="text-decoration: none; display: inline-block;">View Class Details</a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card-premium">
+            <div class="empty-state">
+                <p>No classes found. Create your first class above!</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    let topicCount = 2;
+    const maxTopics = 5;
+
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-p').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab
+        document.getElementById('tab-' + tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function toggleClassContent() {
+        const checkbox = document.getElementById('create_with_class');
+        const contentForm = document.getElementById('class-content-form');
+        if (checkbox.checked) {
+            contentForm.classList.add('active');
+        } else {
+            contentForm.classList.remove('active');
+        }
+    }
+
+    function addTopic() {
+        if (topicCount >= maxTopics) {
+            alert('Maximum 5 topics allowed');
+            return;
+        }
+        topicCount++;
+        const container = document.getElementById('topics-container');
+        const topicDiv = document.createElement('div');
+        topicDiv.className = 'topic-item-p';
+        topicDiv.innerHTML = `
+            <h5>Topic ${topicCount}</h5>
+            <input type="text" class="input-p mb-2" name="topic_name_${topicCount}" placeholder="Topic Name">
+            <input type="text" class="input-p" name="topic_description_${topicCount}" placeholder="Topic Description">
+        `;
+        container.appendChild(topicDiv);
+    }
+
+    function removeTopic() {
+        if (topicCount <= 1) {
+            return;
+        }
+        const container = document.getElementById('topics-container');
+        container.removeChild(container.lastChild);
+        topicCount--;
+    }
+
+    // AI Suggestions Logic
+    document.getElementById('suggestTopicsBtn').addEventListener('click', function() {
+        const subjectName = document.getElementById('section_name').value || document.getElementById('subject').value;
+        if (!subjectName) {
+            alert('Please enter a Subject or Section Name first.');
+            return;
+        }
+
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Suggesting...';
+
+        $.ajax({
+            url: '{% url "teacher_suggest_topics_api" %}',
+            method: 'POST',
+            data: {
+                'subject_name': subjectName,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success && response.topics.length > 0) {
+                    // Clear existing (except the first one if it has value?)
+                    // For simplicity, we'll fill the first N topics
+                    response.topics.forEach((topicName, index) => {
+                        if (index < maxTopics) {
+                            if (index + 1 > topicCount) {
+                                addTopic();
+                            }
+                            const nameInput = document.getElementsByName(`topic_name_${index + 1}`)[0];
+                            if (nameInput) nameInput.value = topicName;
+                        }
+                    });
+                } else {
+                    alert('AI could not suggest topics. Please try again or enter manually.');
+                }
+            },
+            error: function() {
+                alert('Connection error. Is the AI model running?');
+            },
+            complete: function() {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    });
+
+    document.getElementById('generateContentBtn').addEventListener('click', function() {
+        const title = document.getElementById('material_title').value || document.getElementsByName('topic_name_1')[0].value;
+        if (!title) {
+            alert('Please enter a Material Title or at least the first Topic name.');
+            return;
+        }
+
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+
+        $.ajax({
+            url: '{% url "teacher_generate_lesson_api" %}',
+            method: 'POST',
+            data: {
+                'title': title,
+                'action': 'generate_lesson',
+                'length': 'medium',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    document.getElementById('material_content').value = response.generated_content;
+                    if (!document.getElementById('material_title').value) {
+                        document.getElementById('material_title').value = title;
+                    }
+                } else {
+                    alert('Generation failed: ' + response.error);
+                }
+            },
+            error: function() {
+                alert('Connection error. Is the AI model running?');
+            },
+            complete: function() {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    });
+</script>
+{% endblock %}
+

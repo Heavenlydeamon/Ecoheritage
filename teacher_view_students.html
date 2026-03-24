@@ -1,0 +1,160 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}View Students - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-card {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+    }
+    .student-card:hover {
+        border-color: var(--accent-green);
+    }
+    .student-info h4 {
+        color: #fff;
+        margin-bottom: 5px;
+    }
+    .student-info p {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+    .student-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .btn-submit {
+        background: var(--accent-green);
+        color: #000;
+        font-weight: 700;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-submit:hover {
+        background: #fff;
+        transform: scale(1.02);
+    }
+    .btn-secondary {
+        background: transparent;
+        border: 2px solid var(--accent-green);
+        color: var(--accent-green);
+        font-weight: 600;
+    }
+    .btn-secondary:hover {
+        background: var(--accent-green);
+        color: #000;
+    }
+    .stats-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+        border-radius: 15px;
+        font-size: 12px;
+        margin-right: 10px;
+    }
+    .page-header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .page-header h2 {
+        color: var(--accent-green);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        color: var(--text-muted);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    .form-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    .form-card h3 {
+        color: #fff;
+        margin-bottom: 20px;
+    }
+    .search-box {
+        margin-bottom: 20px;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 12px 15px;
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #ffffff;
+    }
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--accent-green);
+    }
+    .search-box input::placeholder {
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h2>👨‍🎓 View Students</h2>
+        <p>View all registered students and their performance</p>
+    </div>
+
+    <div class="form-card">
+        <h3>Registered Students</h3>
+        {% if students %}
+            {% for student in students %}
+            <div class="student-card">
+                <div class="student-info">
+                    <h4>{{ student.user.username }}</h4>
+                    <p>
+                        <span class="stats-badge">📧 {{ student.user.email|default:"No email" }}</span>
+                        <span class="stats-badge">📅 Joined: {{ student.user.date_joined|date:"M d, Y" }}</span>
+                    </p>
+                </div>
+                <div class="student-actions">
+                    <a href="{% url 'teacher_view_student_performance' student.user.id %}" class="btn-submit">View Performance</a>
+                    <a href="{% url 'teacher_assign_marks_student' student.user.id %}" class="btn-submit btn-secondary">Assign Marks</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">👨‍🎓</div>
+                <p>No students registered yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

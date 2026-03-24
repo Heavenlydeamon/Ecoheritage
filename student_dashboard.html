@@ -1,0 +1,903 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Learning Console | EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --card-bg: #ffffff;
+        --card-border: #eeeeee;
+        --card-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05);
+        --accent-gold: #b38b4d;
+        --accent-gold-glass: rgba(179, 139, 77, 0.1);
+        --success-green: #2d6a4f;
+        --alert-red: #ff6b6b;
+        --text-primary: #1a1a1a;
+        --text-secondary: #757575;
+    }
+
+    body {
+        background-color: #f0f2f5;
+        background-image:
+            radial-gradient(at 0% 0%, rgba(179, 139, 77, 0.05) 0, transparent 50%),
+            radial-gradient(at 50% 0%, rgba(45, 106, 79, 0.05) 0, transparent 50%);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .dashboard-wrapper {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Refinement */
+    .sidebar {
+        width: 260px;
+        background: #0a0a0a;
+        padding: 40px 20px;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-brand {
+        font-family: 'Tenor Sans', serif;
+        font-size: 1.1rem;
+        letter-spacing: 3px;
+        margin-bottom: 50px;
+        color: #fff;
+        text-align: center;
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .nav-list a {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-list a:hover,
+    .nav-list a.active {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--accent-gold);
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 260px;
+        padding: 40px 50px;
+    }
+
+    /* Bento Grid System */
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        grid-auto-rows: minmax(180px, auto);
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+
+    .bento-item {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bento-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.1);
+        border-color: var(--accent-gold);
+    }
+
+    /* Card Spans */
+    .span-4 {
+        grid-column: span 4;
+    }
+
+    .span-3 {
+        grid-column: span 3;
+    }
+
+    .span-6 {
+        grid-column: span 6;
+    }
+
+    .span-2 {
+        grid-column: span 2;
+    }
+
+    .rows-2 {
+        grid-row: span 2;
+    }
+
+    /* Specific Bento Styling */
+    .primary-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        color: #fff;
+        border: none;
+    }
+
+    .spirit-guide-card {
+        background: #fff;
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .spirit-guide-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--accent-gold);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 20px rgba(179, 139, 77, 0.2);
+        color: #fff;
+    }
+
+    .xp-ring-container {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: 0 auto;
+    }
+
+    .xp-ring-svg {
+        transform: rotate(-90deg);
+    }
+
+    .xp-ring-bg {
+        fill: none;
+        stroke: rgba(0, 0, 0, 0.05);
+        stroke-width: 10;
+    }
+
+    .xp-ring-fill {
+        fill: none;
+        stroke: var(--accent-gold);
+        stroke-width: 10;
+        stroke-linecap: round;
+        transition: stroke-dasharray 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .xp-ring-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .level-badge {
+        background: var(--accent-gold-glass);
+        color: var(--accent-gold);
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .progress-bar-custom {
+        width: var(--progress-width, 0%);
+        background: var(--success-green) !important;
+        border-radius: 10px;
+        transition: width 1s ease;
+    }
+
+    /* Achievement & Collectibles */
+    .collectible-slot {
+        width: 70px;
+        height: 70px;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        transition: 0.3s;
+    }
+
+    .collectible-slot:hover {
+        background: var(--accent-gold-glass);
+        transform: scale(1.1);
+    }
+
+    /* Knowledge Bloom Mini */
+    .bloom-node-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+    }
+
+    /* Knowledge Bloom Styles */
+    .bloom-node {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #fff;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+        position: relative;
+    }
+
+    .bloom-node.completed {
+        background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+        box-shadow: 0 0 25px rgba(45, 106, 79, 0.4);
+    }
+
+    .bloom-node.in-progress {
+        background: linear-gradient(135deg, #d4a017 0%, #f4a261 100%);
+        box-shadow: 0 0 25px rgba(212, 160, 23, 0.4);
+    }
+
+    .bloom-node.not-started {
+        background: #fff;
+        border-color: #eee;
+        color: #757575;
+    }
+
+    .bloom-node.locked {
+        background: #f0f0f0;
+        border-color: #e0e0e0;
+        color: #aaa;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .bloom-node:hover:not(.locked) {
+        transform: scale(1.1);
+        z-index: 10;
+    }
+
+    .bloom-node-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    .bloom-node-name {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-align: center;
+        max-width: 80px;
+    }
+
+    /* Shard Reconstruct Styling */
+    .shard-box {
+        flex: 1;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.02);
+        border: 1px solid #eee;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .shard-box.unlocked {
+        background: var(--accent-gold-glass);
+        border-color: var(--accent-gold);
+    }
+
+    /* League Notification Toasts */
+    .league-notification {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border-radius: 16px;
+        margin-bottom: 10px;
+        animation: slideInRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+    }
+
+    .league-notification.promotion {
+        background: linear-gradient(135deg, rgba(45, 106, 79, 0.08), rgba(64, 145, 108, 0.08));
+        border: 1px solid rgba(45, 106, 79, 0.2);
+    }
+
+    .league-notification.relegation {
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.08), rgba(255, 139, 139, 0.08));
+        border: 1px solid rgba(255, 107, 107, 0.2);
+    }
+
+    .league-notification.new_league {
+        background: linear-gradient(135deg, rgba(179, 139, 77, 0.08), rgba(212, 175, 55, 0.08));
+        border: 1px solid rgba(179, 139, 77, 0.2);
+    }
+
+    .league-notification .dismiss-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        color: #aaa;
+        margin-left: auto;
+        transition: color 0.2s;
+    }
+
+    .league-notification .dismiss-btn:hover {
+        color: #333;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .league-notification.dismissing {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+
+    @keyframes slideOutRight {
+        to {
+            opacity: 0;
+            transform: translateX(30px);
+            height: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-brand">ECOHERITAGE</div>
+        <ul class="nav-list">
+            <li><a href="{% url 'student_dashboard' %}" class="active"><i class="fa-solid fa-house"></i>
+                    <span>Console</span></a></li>
+            <li><a href="{% url 'student_view_topics' %}"><i class="fa-solid fa-book-open"></i> <span>Library</span></a>
+            </li>
+            <li><a href="{% url 'challenge_mode' %}"><i class="fa-solid fa-bolt"></i> <span>Challenges</span></a></li>
+            <li><a href="{% url 'student_performance' %}"><i class="fa-solid fa-chart-line"></i>
+                    <span>Performance</span></a></li>
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;"></div>
+            <li><a href="{% url 'student_profile' %}"><i class="fa-solid fa-circle-user"></i> <span>Account</span></a>
+            </li>
+            <li><a href="{% url 'logout' %}" style="color: #ff6b6b;"><i class="fa-solid fa-power-off"></i>
+                    <span>Exit</span></a></li>
+        </ul>
+
+        <div style="margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.3); text-align: center;">PROTECTOR v2.0</div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 style="font-size: 1.5rem; margin: 0; font-family: 'Tenor Sans', serif;">Guardian's Console</h1>
+                <p style="font-size: 0.8rem; color: #757575; margin: 0;">Custodian of Kerala's Natural Heritage</p>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                {% if xp_info %}
+                <div class="badge bg-success py-2 px-3 reveal active" style="font-size: 0.7rem; border-radius: 100px;">
+                    +{{ xp_info.xp }} XP: {{ xp_info.reason }}
+                </div>
+                {% endif %}
+                <div class="profile-mini"
+                    style="background: #fff; border-radius: 16px; padding: 8px 16px; border: 1px solid #e0e0e0; display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 0.8rem; font-weight: 600;">{{ user.username }}</span>
+                    {% if profile.image %}
+                    <img src="{{ profile.image.url }}"
+                        style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                    {% else %}
+                    <div
+                        style="width: 32px; height: 32px; border-radius: 8px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <style>
+            .leaderboard-row {
+                border-radius: 10px;
+                transition: 0.3s;
+            }
+
+            .leaderboard-row.current-user {
+                background: rgba(179, 139, 77, 0.12);
+                font-weight: 700;
+            }
+
+            .leaderboard-row.other-user {
+                background: rgba(0, 0, 0, 0.02);
+            }
+
+            .rank-cell {
+                padding: 8px 10px;
+                border-radius: 10px 0 0 10px;
+                width: 30px;
+                text-align: center;
+                font-weight: 800;
+            }
+
+            .rank-1 {
+                color: #FFD700;
+            }
+
+            .rank-2 {
+                color: #C0C0C0;
+            }
+
+            .rank-3 {
+                color: #CD7F32;
+            }
+
+            .rank-other {
+                color: #757575;
+            }
+        </style>
+
+        <!-- League Notifications -->
+        {% if league_notifications %}
+        <div class="mb-4" id="leagueNotifications">
+            {% for notif in league_notifications %}
+            <div class="league-notification {{ notif.notification_type }}" id="notif-{{ notif.id }}">
+                <span style="font-size: 1.3rem;">
+                    {% if notif.notification_type == 'promotion' %}🎉{%elif notif.notification_type == 'relegation'  %}📉{% else %}🛡️{% endif %}
+                </span>
+                <span style="font-size: 0.85rem; font-weight: 600;">{{ notif.message }}</span>
+                <button class="dismiss-btn" onclick="dismissNotification('{{ notif.id }}')" title="Dismiss">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <section class="bento-grid">
+            <!-- TOP SECTION -->
+            <!-- Spirit Guide -->
+            <div class="bento-item span-3 spirit-guide-card">
+                <div class="spirit-guide-avatar">
+                    <i class="fa-solid fa-mountain-sun"></i>
+                </div>
+                <div class="level-badge mb-2 w-fit" style="font-size: 0.75rem;">The Nilgiri Spirit</div>
+                <h2 style="font-family: 'Tenor Sans', serif; font-size: 1.3rem; margin-bottom: 12px;">Guide's Whispers
+                </h2>
+                <p style="font-size: 0.95rem; line-height: 1.6; opacity: 0.7; font-style: italic; margin: 0;">"{{  spirit_guide_message }}"</p>
+            </div>
+
+            <!-- XP Stats -->
+            <div class="bento-item span-3 d-flex flex-column align-items-center justify-content-center">
+                <div class="xp-ring-container mb-4">
+                    <svg class="xp-ring-svg" width="140" height="140">
+                        <circle class="xp-ring-bg" cx="70" cy="70" r="62"></circle>
+                        <circle class="xp-ring-fill" cx="70" cy="70" r="62"
+                            stroke-dasharray="{{ profile.get_xp_ring_offset }}, 389.56"></circle>
+                    </svg>
+                    <div class="xp-ring-center">
+                        <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary);">{{ profile.level  }}</div>
+                        <div
+                            style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">
+                            Level</div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="level-badge">{{ level_title }}</div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 15px;">{{ profile.xp }} /
+                        {{ profile.get_xp_for_next_level }} XP</div>
+                </div>
+            </div>
+
+            <!-- MIDDLE SECTION -->
+            <!-- Continue Learning (Primary Action BIG) -->
+            <div class="bento-item span-4 primary-card d-flex flex-column justify-content-center">
+                <div class="mb-2">
+                    <span class="badge bg-warning text-dark px-3 py-2"
+                        style="border-radius: 100px; font-size: 0.75rem; font-weight: 700;">RECOMMENDED FOR YOU</span>
+                </div>
+                <h2 style="font-family: 'Tenor Sans', serif; font-size: 1.8rem; margin-bottom: 15px;">Continue Learning
+                </h2>
+                {% if recommended_materials %}
+                {% with current=recommended_materials.0.material %}
+                <p style="font-size: 1rem; opacity: 0.8; margin-bottom: 25px; max-width: 400px;">
+                    Pick up where you left off: <strong>{{ current.title }}</strong> in {{ current.topic.name }}.
+                </p>
+                <a href="{% url 'topic_study' current.topic.id %}" class="btn px-5 py-3 w-fit"
+                    style="background: var(--accent-gold); color: #fff; border-radius: 16px; font-size: 1rem; font-weight: 700;">
+                    Resume Journey <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+                {% endwith %}
+                {% else %}
+                <p style="font-size: 1rem; opacity: 0.8; margin-bottom: 25px;">Start your next adventure in Kerala's
+                    heritage.</p>
+                <a href="{% url 'student_view_topics' %}" class="btn px-5 py-3 w-fit"
+                    style="background: var(--accent-gold); color: #fff; border-radius: 16px; font-size: 1rem; font-weight: 700;">
+                    Explore Library <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Streak + Progress -->
+            <div class="bento-item span-2 d-flex flex-column justify-content-center align-items-center gap-3">
+                <div style="font-size: 3rem; color: var(--alert-red);">
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+                <div class="text-center">
+                    <div
+                        style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                        Survival Pulse</div>
+                    <div style="font-size: 1.5rem; font-weight: 800;">{{ streak }} Day Streak</div>
+                </div>
+                <div class="w-100 mt-2">
+                    <div class="progress" style="height: 10px; border-radius: 10px; background: #f0f0f0;">
+                        <div class="progress-bar progress-bar-custom"
+                            style="--progress-width: {{ overall_progress }}%;"></div>
+                    </div>
+                    <div class="text-center mt-2" style="font-size: 0.85rem; color: var(--text-secondary);">{{  overall_progress }}% Mastery</div>
+                </div>
+            </div>
+
+            <!-- BOTTOM SECTION -->
+            <!-- Heritage League -->
+            <div class="bento-item span-3" style="display: flex; flex-direction: column;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3
+                        style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 0;">
+                        Heritage League</h3>
+                    <div style="font-size: 1.8rem; color: var(--accent-gold);">
+                        <i
+                            class="fa-solid {% if league_info %}{{ league_info.icon }}{% else %}fa-shield-halved{% endif %}"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div style="font-size: 1.2rem; font-weight: 800; font-family: 'Tenor Sans', serif;">{%if league_info %}{{ league_info.name }}{% else %}The Outsiders{% endif %}</div>
+                    {% if league_rank %}<span class="level-badge" style="font-size: 0.75rem;">Rank #{{ league_rank  }}</span>{% endif %}
+                </div>
+
+                {% if league_leaderboard %}
+                <div style="flex: 1; overflow-y: auto;">
+                    <table style="width: 100%; font-size: 0.85rem; border-collapse: separate; border-spacing: 0 8px;">
+                        {% for entry in league_leaderboard %}
+                        <tr
+                            class="leaderboard-row {% if entry.profile_id == profile.id %}current-user{% else %}other-user{% endif %}">
+                            <td
+                                class="rank-cell {% if entry.rank == 1 %}rank-1{% elif entry.rank == 2 %}rank-2{% elif entry.rank == 3 %}rank-3{% else %}rank-other{% endif %}">
+                                {% if entry.rank <= 3 %}<i class="fa-solid fa-trophy"></i>{% else %}{{ entry.rank }}{% endif %}
+                            </td>
+                            <td style="padding: 8px 10px;">{{ entry.username }}</td>
+                            <td
+                                style="padding: 8px 10px; text-align: right; font-weight: 700; color: var(--accent-gold);">
+                                {{ entry.points }} pts</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                {% else %}
+                <div
+                    style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-secondary); border: 1px dashed var(--card-border); border-radius: 16px; padding: 20px; text-align: center;">
+                    Earn XP to start competing in leagues!
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bento-item span-3">
+                <h3
+                    style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 20px;">
+                    Recent Activity</h3>
+                <div class="d-flex flex-column gap-3">
+                    {% for attempt in challenge_attempts %}
+                    <div class="d-flex justify-content-between align-items-center p-3"
+                        style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 16px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-bolt" style="color: var(--accent-emerald);"></i>
+                            <div>
+                                <div style="font-size: 0.9rem; font-weight: 700;">{{ attempt.get_challenge_type_display  }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">{{  attempt.end_time|date:"M d" }} • {{ attempt.total_xp_earned }} XP</div>
+                            </div>
+                        </div>
+                        <div style="font-weight: 800; color: var(--accent-emerald); font-size: 1.1rem;">{{ attempt.score  }}</div>
+                    </div>
+                    {% endfor %}
+
+                    {% for attempt in quiz_attempts|slice:":3" %}
+                    <div class="d-flex justify-content-between align-items-center p-3"
+                        style="background: #fcfcfc; border: 1px solid #f0f0f0; border-radius: 16px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-book-open" style="color: var(--accent-gold);"></i>
+                            <div>
+                                <div style="font-size: 0.9rem; font-weight: 700;">{{ attempt.topic.name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ attempt.date_attempted|date:"M d" }}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight: 800; color: var(--text-primary); font-size: 1rem;">{{ attempt.score }}/{{ attempt.total_questions }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Challenge Mastery Card -->
+            <div class="bento-item span-6" style="background: white; border: 1px solid rgba(0,0,0,0.05); min-height: 160px; padding: 30px; display: flex; align-items: center;">
+                <div class="row w-100 align-items-center g-3">
+                    <!-- Identity Section -->
+                    <div class="col-lg-4 d-flex align-items-center gap-4">
+                        <div
+                            style="width: 80px; height: 80px; background: #fffbeb; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15); border: 2.5px solid #fef3c7; flex-shrink: 0;">
+                            🏆
+                        </div>
+                        <div style="min-width: 0;">
+                            <h3 style="font-size: 1.4rem; font-weight: 800; margin: 0; color: #1e293b; letter-spacing: -0.5px;">Challenge Mastery</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0; opacity: 0.7; font-weight: 500;">Your Competitive Legacy</p>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Section -->
+                    <div class="col-lg-5">
+                        <div class="d-flex justify-content-around align-items-center text-center">
+                            <div style="flex: 1;">
+                                <div style="font-size: 2rem; font-weight: 900; color: var(--accent-emerald); line-height: 1.2;">{{ total_challenge_points }}</div>
+                                <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Points</div>
+                            </div>
+                            <div style="width: 1px; height: 40px; background: #f1f5f9; margin: 0 10px;"></div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 2rem; font-weight: 900; color: #f59e0b; line-height: 1.2;">{{ challenge_stats.best_streak|default:0 }}</div>
+                                <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Streak</div>
+                            </div>
+                            <div style="width: 1px; height: 40px; background: #f1f5f9; margin: 0 10px;"></div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 2rem; font-weight: 900; color: #64748b; line-height: 1.2;">{{ challenge_stats.total_completed|default:0 }}</div>
+                                <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Runs</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions Section -->
+                    <div class="col-lg-3">
+                        <div class="d-flex flex-column gap-2">
+                            <a href="{% url 'challenge_mode' %}" class="btn" style="background: var(--accent-gold); color: white; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 6px 18px rgba(245, 158, 11, 0.25); border: none; white-space: nowrap; transition: 0.3s;">
+                                <i class="fa-solid fa-play me-2"></i> New Challenge
+                            </a>
+                            <a href="{% url 'challenge_results' %}" class="btn" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 14px; font-weight: 700; font-size: 0.85rem; white-space: nowrap; transition: 0.3s;">
+                                <i class="fa-solid fa-chart-bar me-2"></i> View Result
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECONDARY WIDGETS SECTION (Moved to bottom) -->
+        <div class="row g-4 mb-5">
+            <!-- Digital Herbarium -->
+            <div class="col-md-6">
+                <div class="bento-item h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3
+                            style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 0;">
+                            Digital Herbarium</h3>
+                        <i class="fa-solid fa-leaf" style="color: var(--success-green);"></i>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for uc in user_collectibles %}
+                        <div class="collectible-slot" title="{{ uc.item.name }}">
+                            {% if uc.item.category == 'flora' %}🌿{% elif uc.item.category == 'fauna' %}🐘{% else %}🎭{% endif %}
+                        </div>
+                        {% empty %}
+                        <div
+                            style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; width: 100%; padding: 20px;">
+                            Empty Archive. Start studying to collect species.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Artifact Reconstruction -->
+            <div class="col-md-6">
+                <div class="bento-item h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3
+                            style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 0;">
+                            Reconstruct Artifacts</h3>
+                        <i class="fa-solid fa-puzzle-piece" style="color: var(--accent-gold);"></i>
+                    </div>
+                    {% if user_shards %}
+                    <p style="font-size: 0.9rem; margin-bottom: 20px;">Restoring: <span
+                            style="font-weight: 700; color: var(--accent-gold);">{{  user_shards.0.shard.parent_artifact.name }}</span></p>
+                    <div class="d-flex gap-2">
+                        {% for i in "1234" %}
+                        <div class="shard-box {% if forloop.counter <= user_shards.count %}unlocked{% endif %}"
+                            style="width: 50px; height: 50px; border-radius: 12px;">
+                            {% if forloop.counter <= user_shards.count %}<i class="fa-solid fa-check"
+                                style="color: var(--accent-gold);"></i>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; padding: 20px;">
+                        Find shards by mastering heritage modules.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECONDARY KNOWLEDGE PATHS -->
+        <h2
+            style="font-family: 'Tenor Sans', serif; font-size: 1.2rem; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px;">
+            Discover More</h2>
+
+        <!-- Knowledge Bloom Skill Tree -->
+        {% if knowledge_bloom %}
+        <section class="mb-5">
+            <div class="bento-item p-5">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div>
+                        <h3
+                            style="font-family: 'Tenor Sans', serif; font-size: 1.5rem; color: var(--accent-gold); margin: 0;">
+                            Knowledge Bloom</h3>
+                        <p style="font-size: 0.95rem; color: var(--text-secondary); margin: 0;">Your botanical journey
+                            through heritage</p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-5 flex-wrap">
+                    {% for root_topic in knowledge_bloom %}
+                    <div class="d-flex flex-column align-items-center gap-4">
+                        <a href="{% if root_topic.is_unlocked %}{% url 'topic_study' root_topic.id %}{% else %}#{% endif %}"
+                            class="bloom-node {% if root_topic.status == 'completed' %}completed{% elif root_topic.status == 'in_progress' %}in-progress{% elif root_topic.is_unlocked %}not-started{% else %}locked{% endif %}"
+                            {% if not root_topic.is_unlocked %}onclick="return false;" {% endif %}
+                            title="{{ root_topic.description }}">
+                            <span class="bloom-node-icon">
+                                {% if root_topic.status == 'completed' %}✓{%elif root_topic.status == 'in_progress'  %}⟳{% elif root_topic.is_unlocked %}<i class="fa-solid fa-book"></i>{% else %}<i
+                                    class="fa-solid fa-lock"></i>{% endif %}
+                            </span>
+                            <span class="bloom-node-name" style="font-size: 0.85rem;">{{ root_topic.name }}</span>
+                        </a>
+
+                        {% if root_topic.children %}
+                        <div class="d-flex gap-3 position-relative mt-2">
+                            {% for child in root_topic.children %}
+                            <div class="d-flex flex-column align-items-center gap-3">
+                                <div style="width: 2px; height: 15px; background: rgba(0,0,0,0.05);"></div>
+                                <a href="{% if child.is_unlocked %}{% url 'topic_study' child.id %}{% else %}#{% endif %}"
+                                    class="bloom-node {% if child.status == 'completed' %}completed{% elif child.status == 'in_progress' %}in-progress{% elif child.is_unlocked %}not-started{% else %}locked{% endif %}"
+                                    style="width: 80px; height: 80px;" {%if not child.is_unlocked  %}onclick="return false;" {% endif %} title="{{ child.description }}">
+                                    <span class="bloom-node-icon" style="font-size: 1.4rem;">
+                                        {% if child.status == 'completed' %}✓{% elif child.status == 'in_progress' %}⟳{% elif child.is_unlocked %}<i class="fa-solid fa-leaf"></i>{% else %}<i
+                                            class="fa-solid fa-lock"></i>{% endif %}
+                                    </span>
+                                    <span class="bloom-node-name" style="font-size: 0.75rem;">{{  child.name|truncatechars:12 }}</span>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- AI Personalized Tutor -->
+        {% if weak_topics or recommended_materials %}
+        <section class="mb-5">
+            <div class="row g-4">
+                {% if weak_topics %}
+                <div class="col-md-6">
+                    <div class="bento-item h-100" style="background: #fff;">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <i class="fa-solid fa-microchip"
+                                style="color: var(--success-green); font-size: 1.2rem;"></i>
+                            <h3
+                                style="font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin: 0;">
+                                Revision Path</h3>
+                        </div>
+                        <div class="d-flex flex-column gap-3">
+                            {% for item in weak_topics|slice:":3" %}
+                            <a href="{% url 'topic_study' item.topic.id %}"
+                                class="d-flex justify-content-between align-items-center p-3 text-decoration-none"
+                                style="background: #fdfdfd; border-radius: 16px; border: 1px solid #eee; transition: 0.3s;">
+                                <div>
+                                    <div style="font-size: 1rem; font-weight: 700; color: #1a1a1a;">{{ item.topic.name  }}</div>
+                                    <div style="font-size: 0.85rem; color: var(--alert-red);">Current Mastery: {{  item.accuracy|floatformat:0 }}%</div>
+                                </div>
+                                <div class="badge bg-danger rounded-pill"
+                                    style="font-size: 0.75rem; padding: 6px 12px;">Study Now</div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if recommended_materials %}
+                <div class="col-md-6">
+                    <div class="bento-item h-100" style="background: #fff;">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <i class="fa-solid fa-sparkles" style="color: var(--accent-gold); font-size: 1.2rem;"></i>
+                            <h3
+                                style="font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin: 0;">
+                                New Discoveries</h3>
+                        </div>
+                        <div class="d-flex flex-column gap-3">
+                            {% for material in recommended_materials|slice:":3" %}
+                            <a href="{% url 'topic_study' material.material.topic.id %}"
+                                class="d-flex justify-content-between align-items-center p-3 text-decoration-none"
+                                style="background: #fdfdfd; border-radius: 16px; border: 1px solid #eee; transition: 0.3s;">
+                                <div>
+                                    <div style="font-size: 1rem; font-weight: 700; color: #1a1a1a;">{{  material.material.title }}</div>
+                                    <div style="font-size: 0.85rem; color: var(--accent-gold);">Topic: {{  material.material.topic.name }}</div>
+                                </div>
+                                <div class="badge bg-warning text-dark rounded-pill"
+                                    style="font-size: 0.75rem; padding: 6px 12px;">Recommended</div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function dismissNotification(notifId) {
+        const el = document.getElementById('notif-' + notifId);
+        if (el) el.classList.add('dismissing');
+        fetch('{% url "dismiss_league_notification" notification_id=0 %}'.replace('/0/', '/' + notifId + '/'), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).then(function () {
+            setTimeout(function () { if (el) el.remove(); }, 350);
+        });
+    }
+</script>
+{% endblock %}

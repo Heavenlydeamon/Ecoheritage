@@ -1,0 +1,138 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Analytics - Admin Dashboard{% endblock %}
+
+{% block nav_links %}
+<li class="nav-item px-3 text-success fw-bold">Admin: {{ user.username }}</li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_institutions' %}">Institutions</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_teachers' %}">Teachers</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_students' %}">Students</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_classes' %}">Classes</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_view_join_requests' %}">Requests</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_manage_general_content' %}">Content</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_analytics' %}">Analytics</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'admin_system_settings' %}">Settings</a></li>
+<li class="nav-item"><a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Logout</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="welcome-section">
+        <h2>Analytics Dashboard</h2>
+        <p>View system-wide performance metrics, institution rankings, and cross-comparisons.</p>
+    </div>
+
+    <div class="dashboard-card" style="margin-bottom: 30px;">
+        <h3 class="section-title">Institution Performance Ranking</h3>
+        {% if institution_performance %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: inherit;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #444;">
+                        <th style="padding: 15px; text-align: left;">Rank</th>
+                        <th style="padding: 15px; text-align: left;">Institution</th>
+                        <th style="padding: 15px; text-align: center;">Total Attempts</th>
+                        <th style="padding: 15px; text-align: center;">Average Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inst in institution_performance %}
+                    <tr style="border-bottom: 1px solid #333;">
+                        <td style="padding: 15px;">{% if forloop.first %}<span style="background: gold; color: #000; padding: 3px 8px; border-radius: 10px; font-weight: bold;">{{ forloop.counter }}</span>{% else %}{{ forloop.counter }}{% endif %}</td>
+                        <td style="padding: 15px;"><strong>{{ inst.institution.name }}</strong></td>
+                        <td style="padding: 15px; text-align: center;">{{ inst.total_attempts }}</td>
+                        <td style="padding: 15px; text-align: center;">{% if inst.avg_score >= 70 %}<span style="color: var(--accent-green);">{{ inst.avg_score }}%</span>{% elif inst.avg_score >= 40 %}<span style="color: #ffc107;">{{ inst.avg_score }}%</span>{% else %}<span style="color: #ff4444;">{{ inst.avg_score }}%</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No data available.</p></div>
+        {% endif %}
+    </div>
+
+    <div class="two-column">
+        <div class="dashboard-card">
+            <h3 class="section-title">Top Performing Classes</h3>
+            {% if top_classes %}
+            <ul class="activity-list">
+                {% for item in top_classes %}
+                <li class="activity-item">
+                    <div class="activity-info">
+                        <h4>{{ item.class_obj.name }}</h4>
+                        <p>{{ item.class_obj.institution.name }}</p>
+                    </div>
+                    <div class="activity-score">{{ item.avg_score }}%</div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state"><p>No data</p></div>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-card">
+            <h3 class="section-title">Lowest Performing Classes</h3>
+            {% if lowest_classes %}
+            <ul class="activity-list">
+                {% for item in lowest_classes %}
+                <li class="activity-item">
+                    <div class="activity-info">
+                        <h4>{{ item.class_obj.name }}</h4>
+                        <p>{{ item.class_obj.institution.name }}</p>
+                    </div>
+                    <div class="activity-score" style="background: rgba(255,0,0,0.1); border-color: #ff4444; color: #ff4444;">{{ item.avg_score }}%</div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state"><p>No data</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="two-column">
+        <div class="dashboard-card">
+            <h3 class="section-title">Most Attempted Quizzes</h3>
+            {% if most_attempted %}
+            <ul class="activity-list">
+                {% for item in most_attempted %}
+                <li class="activity-item">
+                    <div class="activity-info"><h4>{{ item.section.name }}</h4></div>
+                    <div class="activity-score">{{ item.attempts }} attempts</div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state"><p>No data</p></div>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-card">
+            <h3 class="section-title">Average Scores by Section</h3>
+            {% if avg_by_section %}
+            <ul class="activity-list">
+                {% for item in avg_by_section %}
+                <li class="activity-item">
+                    <div class="activity-info"><h4>{{ item.section }}</h4></div>
+                    <div class="activity-score">{{ item.avg_score }}%</div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state"><p>No data</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

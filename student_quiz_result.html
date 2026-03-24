@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Result - {{ topic_name }} - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-card {
+        background: #ffffff;
+        border: 1px solid #eeeeee;
+        border-radius: 24px;
+        padding: 50px;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .result-icon {
+        font-size: 80px;
+        margin-bottom: 25px;
+        display: block;
+    }
+
+    .result-card h2 {
+        color: #1a1a1a;
+        margin-bottom: 12px;
+        font-family: 'Tenor Sans', serif;
+        font-size: 2rem;
+    }
+
+    .result-card p {
+        color: #757575;
+        margin-bottom: 35px;
+        font-size: 1rem;
+    }
+
+    .score-display {
+        margin: 30px 0;
+    }
+
+    .score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 25px;
+        border: 6px solid;
+        background: #fff;
+    }
+
+    .score-circle.excellent { border-color: #2d6a4f; color: #2d6a4f; }
+    .score-circle.good { border-color: #b38b4d; color: #b38b4d; }
+    .score-circle.average { border-color: #e67e00; color: #e67e00; }
+    .score-circle.poor { border-color: #ff6b6b; color: #ff6b6b; }
+
+    .score-value {
+        font-size: 42px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .score-total {
+        font-size: 16px;
+        opacity: 0.6;
+        font-weight: 600;
+    }
+
+    .percentage {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .percentage.excellent { color: #2d6a4f; }
+    .percentage.good { color: #b38b4d; }
+    .percentage.average { color: #e67e00; }
+    .percentage.poor { color: #ff6b6b; }
+
+    .feedback {
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        font-weight: 500;
+        border: 1px solid transparent;
+    }
+
+    .feedback.excellent { background: rgba(45, 106, 79, 0.05); color: #2d6a4f; border-color: rgba(45, 106, 79, 0.1); }
+    .feedback.good { background: rgba(179, 139, 77, 0.05); color: #b38b4d; border-color: rgba(179, 139, 77, 0.1); }
+    .feedback.average { background: rgba(230, 126, 34, 0.05); color: #e67e00; border-color: rgba(230, 126, 34, 0.1); }
+    .feedback.poor { background: rgba(255, 107, 107, 0.05); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.1); }
+
+    .actions {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 15px 35px;
+        background: #b38b4d;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn:hover {
+        background: #1a1a1a;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #fff;
+        border: 1px solid #eeeeee;
+        color: #757575;
+    }
+
+    .btn-secondary:hover {
+        background: #fcfcfc;
+        border-color: #b38b4d;
+        color: #b38b4d;
+    }
+
+    /* XP Victory Modal Styles */
+    .victory-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .victory-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .victory-modal {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(102, 126, 234, 0.3);
+        transform: scale(0.8) translateY(20px);
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        max-width: 400px;
+        width: 90%;
+        position: relative;
+    }
+
+    .victory-modal-overlay.active .victory-modal {
+        transform: scale(1) translateY(0);
+    }
+
+    .victory-modal h3 {
+        color: #fff;
+        margin-bottom: 15px;
+        font-size: 28px;
+        font-family: 'Tenor Sans', serif;
+    }
+
+    .xp-amount {
+        font-size: 56px;
+        font-weight: bold;
+        background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin: 15px 0;
+        line-height: 1;
+    }
+
+    .xp-reason {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+    .level-up-notice {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(245, 87, 108, 0.4);
+        }
+
+        70% {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 10px rgba(245, 87, 108, 0);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(245, 87, 108, 0);
+        }
+    }
+
+    .level-up-notice h4 {
+        color: #fff;
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .level-badge {
+        display: inline-block;
+        background: #fff;
+        color: #f5576c;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-weight: bold;
+        margin-left: 10px;
+        font-size: 14px;
+    }
+
+    .btn-dismiss {
+        display: inline-block;
+        padding: 12px 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 20px;
+        font-size: 16px;
+    }
+
+    .btn-dismiss:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #f00;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="result-card">
+        {% if percentage >= 80 %}
+        <div class="result-icon">🎉</div>
+        <div class="score-circle excellent">
+            <div class="score-value">{{ score }}</div>
+            <div class="score-total">/ {{ total }}</div>
+        </div>
+        <div class="percentage {% if percentage >= 80 %}excellent{% elif percentage >= 60 %}good{% elif percentage >= 40 %}average{% else %}poor{% endif %}">
+            {{ percentage|floatformat:1 }}% Correct
+        </div>
+        <div style="font-size: 1.1rem; color: #1a1a1a; margin-bottom: 30px; font-weight: 600;">
+            Score: {{ score }} / {{ total }} correct answers
+        </div>
+
+        {% elif percentage >= 60 %}
+        <div class="result-icon">👍</div>
+        <div class="score-circle good">
+            <div class="score-value">{{ score }}</div>
+            <div class="score-total">/ {{ total }}</div>
+        </div>
+        <div class="percentage good">{{ percentage|floatformat:1 }}% Correct</div>
+        <div style="font-size: 1.1rem; color: #1a1a1a; margin-bottom: 30px; font-weight: 600;">
+            Score: {{ score }} / {{ total }} correct answers
+        </div>
+        <div class="feedback good">Good job! Keep up the good work!</div>
+
+        {% elif percentage >= 40 %}
+        <div class="result-icon">📚</div>
+        <div class="score-circle average">
+            <div class="score-value">{{ score }}</div>
+            <div class="score-total">/ {{ total }}</div>
+        </div>
+        <div class="percentage average">{{ percentage|floatformat:1 }}% Correct</div>
+        <div style="font-size: 1.1rem; color: #1a1a1a; margin-bottom: 30px; font-weight: 600;">
+            Score: {{ score }} / {{ total }} correct answers
+        </div>
+        <div class="feedback average">Not bad! A little more practice will help.</div>
+
+        {% else %}
+        <div class="result-icon">💪</div>
+        <div class="score-circle poor">
+            <div class="score-value">{{ score }}</div>
+            <div class="score-total">/ {{ total }}</div>
+        </div>
+        <div class="percentage poor">{{ percentage|floatformat:1 }}% Correct</div>
+        <div style="font-size: 1.1rem; color: #1a1a1a; margin-bottom: 30px; font-weight: 600;">
+            Score: {{ score }} / {{ total }} correct answers
+        </div>
+        <div class="feedback poor">Keep trying! Review the material and try again.</div>
+        {% endif %}
+
+        <h2>Quiz Completed!</h2>
+        <p>You completed the quiz on {{ topic_name }}</p>
+
+        {# XP Victory Modal #}
+        {% if xp_earned_info %}
+        <div class="victory-modal-overlay" id="victoryModal">
+            <div class="victory-modal">
+                <h3>Quiz Mastered! 🏆</h3>
+                <div class="xp-amount">+{{ xp_earned_info.xp }} XP</div>
+                <p class="xp-reason">{{ xp_earned_info.reason }}</p>
+                {% if xp_earned_info.leveled_up %}
+                <div class="level-up-notice">
+                    <h4>Level Up! 🎊 <span class="level-badge">Level {{ profile.level }}</span></h4>
+                </div>
+                {% endif %}
+                <button class="btn-dismiss" onclick="dismissVictoryModal()">Awesome!</button>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Show modal after a brief delay for dramatic effect
+                setTimeout(() => {
+                    const modal = document.getElementById('victoryModal');
+                    if (modal) {
+                        modal.classList.add('active');
+                        createConfetti();
+                    }
+                }, 500);
+            });
+
+            function dismissVictoryModal() {
+                const modal = document.getElementById('victoryModal');
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300); // match transition duration
+            }
+
+            function createConfetti() {
+                const colors = ['#f6d365', '#fda085', '#667eea', '#764ba2', '#f093fb', '#f5576c'];
+                const modal = document.querySelector('.victory-modal');
+
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+
+                    // Random properties
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const left = Math.random() * 100;
+                    const top = Math.random() * 100;
+                    const size = Math.random() * 8 + 4;
+
+                    confetti.style.backgroundColor = color;
+                    confetti.style.left = left + '%';
+                    confetti.style.top = top + '%';
+                    confetti.style.width = size + 'px';
+                    confetti.style.height = size + 'px';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.position = 'absolute';
+                    confetti.style.zIndex = '-1'; // Behind modal content
+
+                    // Animation
+                    confetti.animate([
+                        { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                        { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${(Math.random()) * 200}px, 0) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    ], {
+                        duration: 1000 + Math.random() * 1000,
+                        easing: 'cubic-bezier(.37,0,.63,1)',
+                        fill: 'forwards'
+                    });
+
+                    modal.appendChild(confetti);
+                }
+            }
+        </script>
+        {% endif %}
+
+        <div class="actions">
+            <a href="{% url 'student_view_topics' %}" class="btn">More Topics</a>
+            <a href="{% url 'student_performance' %}" class="btn btn-secondary">View Performance</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

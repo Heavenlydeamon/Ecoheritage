@@ -1,0 +1,292 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-pen"></i> Create Manual Quiz</h2>
+                <a href="{% url 'teacher_ai_quiz_generator' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-robot"></i> Use AI Generator
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Quiz Details</h5>
+                </div>
+                <div class="card-body">
+                    <form id="manualQuizForm">
+                        {% csrf_token %}
+                        
+                        <!-- Quiz Title -->
+                        <div class="mb-3">
+                            <label for="quizTitle" class="form-label">Quiz Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="quizTitle" name="title" required>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="quizDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="quizDescription" name="description" rows="2"></textarea>
+                        </div>
+                        
+                        <!-- Section -->
+                        <div class="mb-3">
+                            <label for="sectionSelect" class="form-label">Section <span class="text-danger">*</span></label>
+                            <select class="form-select" id="sectionSelect" name="section_id" required>
+                                <option value="">Choose section...</option>
+                                {% for section in sections %}
+                                <option value="{{ section.id }}">{{ section.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Topic -->
+                        <div class="mb-3">
+                            <label for="topicSelect" class="form-label">Topic</label>
+                            <select class="form-select" id="topicSelect" name="topic_id">
+                                <option value="">All Topics</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Study Material (optional) -->
+                        <div class="mb-3">
+                            <label for="materialSelect" class="form-label">Link to Study Material (Optional)</label>
+                            <select class="form-select" id="materialSelect" name="study_material_id">
+                                <option value="">None</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Content Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Content Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="content_type" id="contentGeneral" value="general" checked>
+                                <label class="btn btn-outline-primary" for="contentGeneral">General Content</label>
+                                
+                                <input type="radio" class="btn-check" name="content_type" id="contentClass" value="class">
+                                <label class="btn btn-outline-success" for="contentClass">Class Content</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Class Selection -->
+                        <div class="mb-3" id="classSelectContainer" style="display: none;">
+                            <label for="classSelect" class="form-label">Class</label>
+                            <select class="form-select" id="classSelect" name="class_id">
+                                <option value="">Choose class...</option>
+                                {% for class in teacher_classes %}
+                                <option value="{{ class.id }}">{{ class.name }} - {{ class.subject }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Questions -->
+                        <h5>Questions</h5>
+                        <div id="questionsContainer"></div>
+                        
+                        <div class="mb-3">
+                            <label for="numQuestions" class="form-label">Number of Questions</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="numQuestions" value="5" min="1" max="20">
+                                <button type="button" class="btn btn-primary" id="addQuestionsBtn">
+                                    <i class="fas fa-plus"></i> Add Questions
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Create Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>Fill in the quiz details</li>
+                        <li>Select the number of questions to add</li>
+                        <li>Fill in each question with 4 options</li>
+                        <li>Mark the correct answer</li>
+                        <li>Set difficulty for each question</li>
+                        <li>Click "Create Quiz"</li>
+                    </ol>
+                    
+                    <hr>
+                    
+                    <h6>Question Format:</h6>
+                    <ul>
+                        <li>Question text (required)</li>
+                        <li>4 options (at least 2 required)</li>
+                        <li>Select correct answer</li>
+                        <li>Set difficulty level</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set up CSRF token for all AJAX requests
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+        }
+    }
+});
+
+$(document).ready(function() {
+    // Toggle class selection
+    $('input[name="content_type"]').change(function() {
+        if ($('#contentClass').is(':checked')) {
+            $('#classSelectContainer').show();
+        } else {
+            $('#classSelectContainer').hide();
+        }
+    });
+    
+    // Load topics when section is selected
+    $('#sectionSelect').change(function() {
+        const sectionId = $(this).val();
+        if (sectionId) {
+            $.get('{% url "get_topics_ajax" %}?section_id=' + sectionId, function(data) {
+                $('#topicSelect').empty().append('<option value="">All Topics</option>');
+                $.each(data, function(index, topic) {
+                    $('#topicSelect').append('<option value="' + topic.id + '">' + topic.name + '</option>');
+                });
+            });
+            
+            $.get('{% url "get_study_materials_ajax" %}?section_id=' + sectionId, function(data) {
+                $('#materialSelect').empty().append('<option value="">None</option>');
+                $.each(data, function(index, material) {
+                    $('#materialSelect').append('<option value="' + material.id + '">' + material.title + '</option>');
+                });
+            });
+        }
+    });
+    
+    // Add questions
+    $('#addQuestionsBtn').click(function() {
+        const numQuestions = parseInt($('#numQuestions').val()) || 1;
+        addQuestions(numQuestions);
+    });
+    
+    function addQuestions(count) {
+        const container = $('#questionsContainer');
+        const currentCount = container.children().length;
+        
+        for (let i = 1; i <= count; i++) {
+            const qNum = currentCount + i;
+            const html = `
+                <div class="question-block mb-4 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Question ${qNum}</h6>
+                        <select name="difficulty_${qNum}" class="form-select form-select-sm w-auto">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" name="question_text_${qNum}" 
+                               placeholder="Enter question text" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Options:</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input type="radio" name="q${qNum}_correct" value="1" checked>
+                            </div>
+                            <input type="text" class="form-control" name="q${qNum}_choice1" placeholder="Option 1" required>
+                        </div>
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input type="radio" name="q${qNum}_correct" value="2">
+                            </div>
+                            <input type="text" class="form-control" name="q${qNum}_choice2" placeholder="Option 2" required>
+                        </div>
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input type="radio" name="q${qNum}_correct" value="3">
+                            </div>
+                            <input type="text" class="form-control" name="q${qNum}_choice3" placeholder="Option 3 (optional)">
+                        </div>
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input type="radio" name="q${qNum}_correct" value="4">
+                            </div>
+                            <input type="text" class="form-control" name="q${qNum}_choice4" placeholder="Option 4 (optional)">
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.append(html);
+        }
+    }
+    
+    // Submit form
+    $('#manualQuizForm').submit(function(e) {
+        e.preventDefault();
+        
+        const numQuestions = $('#questionsContainer').children().length;
+        if (numQuestions === 0) {
+            alert('Please add at least one question.');
+            return;
+        }
+        
+        // Add num_questions to form data
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'num_questions',
+            value: numQuestions
+        }).appendTo(this);
+        
+        $.ajax({
+            url: '{% url "teacher_create_manual_quiz" %}',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    alert('Quiz created successfully!');
+                    window.location.href = '{% url "teacher_my_quizzes" %}';
+                } else {
+                    alert(response.error);
+                }
+            },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.error || 'An error occurred');
+            }
+        });
+    });
+    
+    // Add 5 questions by default
+    addQuestions(5);
+});
+</script>
+{% endblock %}
+

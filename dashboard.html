@@ -1,0 +1,38 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Dashboard - EcoHeritage Kerala{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="welcome-section">
+        <h2>Welcome, {{ user.username }}! 👋</h2>
+        <p>Welcome to your EcoHeritage dashboard.</p>
+    </div>
+
+    {% if profile.role == 'admin' %}
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="icon">⚙️</div>
+            <h3>Admin</h3>
+            <p>Admin Dashboard</p>
+        </div>
+    </div>
+    {% elif profile.role == 'teacher' %}
+    <div class="actions-grid">
+        <div class="action-card">
+            <h3><span>🏫</span> Teacher Dashboard</h3>
+            <p>Manage your classes, students, and content.</p>
+            <a href="{% url 'teacher_dashboard' %}" class="btn-dashboard">Go to Teacher Dashboard</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="actions-grid">
+        <div class="action-card">
+            <h3><span>📚</span> Student Dashboard</h3>
+            <p>Start learning and track your progress.</p>
+            <a href="{% url 'student_dashboard' %}" class="btn-dashboard">Go to Student Dashboard</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

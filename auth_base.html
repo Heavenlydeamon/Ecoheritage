@@ -1,0 +1,284 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoHeritage Kerala{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #0e0e0e;
+            --bg-bone: #f4f1ea;
+            --card-white: #ffffff;
+            --accent-gold: #b38b4d;
+            --accent-green: #2E8B57;
+            --text-main: #1a1a1a;
+            --text-muted: #757575;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-bone);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-white);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            position: relative;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            color: var(--bg-deep);
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: normal;
+            font-family: 'Tenor Sans', serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 15px;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text-main);
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(179, 139, 77, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #aaa;
+        }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-gold);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: 'Tenor Sans', serif;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-auth:hover {
+            background: var(--bg-deep);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .auth-link a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .message.error {
+            background: rgba(255, 0, 0, 0.05);
+            color: #d32f2f;
+            border-left-color: #d32f2f;
+        }
+
+        .message.success {
+            background: rgba(46, 139, 87, 0.05);
+            color: var(--accent-green);
+            border-left-color: var(--accent-green);
+        }
+
+        .message.info {
+            background: rgba(0, 150, 255, 0.05);
+            color: #0096ff;
+            border-left-color: #0096ff;
+        }
+
+        .form-errors {
+            background: rgba(255, 0, 0, 0.05);
+            color: #d32f2f;
+            border-left: 3px solid #d32f2f;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .form-errors ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .form-errors li {
+            margin-bottom: 5px;
+        }
+
+        .helptext {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .required {
+            color: #d32f2f;
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .brand-logo a {
+            font-family: 'Tenor Sans', serif;
+            font-size: 1.6rem;
+            color: var(--bg-deep);
+            text-decoration: none;
+            letter-spacing: 3px;
+        }
+
+        .brand-logo a span {
+            color: var(--accent-gold);
+        }
+
+        .forgot-link {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .forgot-link a {
+            color: var(--text-muted);
+            font-size: 12px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .forgot-link a:hover {
+            color: var(--accent-gold);
+        }
+
+        .role-links {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .role-links p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="auth-card">
+    <div class="brand-logo">
+        <a href="/">
+            ECO<span>HERITAGE</span>
+        </a>
+    </div>
+    
+    {% block auth_content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// Set up CSRF token for all AJAX requests globally
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+        }
+    }
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

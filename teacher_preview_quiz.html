@@ -1,0 +1,247 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'teacher_my_quizzes' %}">My Quizzes</a></li>
+                    <li class="breadcrumb-item active">Preview Quiz</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quiz Details -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Quiz Details</h5>
+                </div>
+                <div class="card-body">
+                    <h4>{{ quiz.title }}</h4>
+                    {% if quiz.description %}
+                    <p class="text-muted">{{ quiz.description }}</p>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-4">Section:</dt>
+                        <dd class="col-sm-8">{{ quiz.section.name }}</dd>
+                        
+                        {% if quiz.topic %}
+                        <dt class="col-sm-4">Topic:</dt>
+                        <dd class="col-sm-8">{{ quiz.topic.name }}</dd>
+                        {% endif %}
+                        
+                        <dt class="col-sm-4">Content Type:</dt>
+                        <dd class="col-sm-8">
+                            {% if quiz.content_type == 'general' %}
+                            <span class="badge bg-info">General</span>
+                            {% else %}
+                            <span class="badge bg-success">Class</span>
+                            {% if quiz.class_obj %}- {{ quiz.class_obj.name }}{% endif %}
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-4">Status:</dt>
+                        <dd class="col-sm-8">
+                            {% if quiz.status == 'draft' %}
+                            <span class="badge bg-secondary">Draft</span>
+                            {% elif quiz.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif quiz.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif quiz.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-4">Generated:</dt>
+                        <dd class="col-sm-8">{{ quiz.generated_at|date:"M d, Y H:i" }}</dd>
+                        
+                        {% if quiz.rejection_reason %}
+                        <dt class="col-sm-4">Rejection Reason:</dt>
+                        <dd class="col-sm-8 text-danger">{{ quiz.rejection_reason }}</dd>
+                        {% endif %}
+                    </dl>
+                    
+                    {% if quiz.status == 'draft' %}
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-secondary" id="saveDraftBtn">
+                            <i class="fas fa-save"></i> Save as Draft
+                        </button>
+                        <button class="btn btn-primary" id="submitApprovalBtn">
+                            <i class="fas fa-paper-plane"></i> Submit for Approval
+                        </button>
+                    </div>
+                    {% endif %}
+                    
+                    {% if quiz.status == 'approved' %}
+                    <div class="d-grid">
+                        <button class="btn btn-success" id="convertBtn">
+                            <i class="fas fa-exchange-alt"></i> Convert to Questions
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Questions -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Questions ({{ quiz.questions.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for question in quiz.questions.all %}
+                    <div class="question-item mb-4 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">Question {{ forloop.counter }}</h6>
+                            <span class="badge bg-{% if question.difficulty == 'easy' %}success{% elif question.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
+                                {{ question.difficulty }}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <input type="text" class="form-control question-text" 
+                                   data-question-id="{{ question.id }}" 
+                                   value="{{ question.question_text }}">
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label class="form-label">Options:</label>
+                            {% for choice in question.choices.all %}
+                            <div class="input-group mb-2">
+                                <div class="input-group-text">
+                                    <input type="radio" name="correct_{{ question.id }}" 
+                                           {% if choice.is_correct %}checked{% endif %}
+                                           title="Mark as correct">
+                                </div>
+                                <input type="text" class="form-control choice-text" 
+                                       data-choice-id="{{ choice.id }}"
+                                       value="{{ choice.choice_text }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label class="form-label">Difficulty:</label>
+                            <select class="form-select question-difficulty" data-question-id="{{ question.id }}">
+                                <option value="easy" {% if question.difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                                <option value="medium" {% if question.difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                                <option value="hard" {% if question.difficulty == 'hard' %}selected{% endif %}>Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set up CSRF token for all AJAX requests
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+        }
+    }
+});
+
+$(document).ready(function() {
+    // Save as draft
+    $('#saveDraftBtn').click(function() {
+        saveQuiz('draft');
+    });
+    
+    // Submit for approval
+    $('#submitApprovalBtn').click(function() {
+        saveQuiz('submit');
+    });
+    
+    // Convert to questions
+    $('#convertBtn').click(function() {
+        if (confirm('Convert this quiz to regular questions?')) {
+            $.ajax({
+                url: '{% url "convert_quiz_to_questions" quiz.id %}',
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr) {
+                    alert(xhr.responseJSON?.error || 'An error occurred');
+                }
+            });
+        }
+    });
+    
+    function saveQuiz(action) {
+        $.ajax({
+            url: '{% url "teacher_save_quiz" quiz.id %}',
+            method: 'POST',
+            data: {
+                action: action,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                alert('Quiz ' + (action === 'submit' ? 'submitted for approval!' : 'saved as draft!'));
+                location.reload();
+            },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.error || 'An error occurred');
+            }
+        });
+    }
+    
+    // Update question text
+    $('.question-text').change(function() {
+        const questionId = $(this).data('question-id');
+        const questionText = $(this).val();
+        
+        $.ajax({
+            url: '{% url "teacher_update_question" question_id=0 %}'.replace('0', questionId),
+            method: 'POST',
+            data: {
+                question_text: questionText,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }
+        });
+    });
+    
+    // Update difficulty
+    $('.question-difficulty').change(function() {
+        const questionId = $(this).data('question-id');
+        const difficulty = $(this).val();
+        
+        $.ajax({
+            url: '{% url "teacher_update_question" question_id=0 %}'.replace('0', questionId),
+            method: 'POST',
+            data: {
+                difficulty: difficulty,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+

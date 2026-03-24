@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}My Marks - EcoHeritage Kerala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .header {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    .header h2 {
+        color: #fff;
+        margin-bottom: 10px;
+    }
+    .header p {
+        color: var(--text-muted);
+    }
+    .class-info {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid var(--accent-green);
+        border-radius: 10px;
+        display: inline-block;
+    }
+    .class-info span {
+        color: var(--accent-green);
+        font-weight: 500;
+    }
+    .summary-card {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+    .summary-item h3 {
+        color: var(--accent-green);
+        font-size: 36px;
+        margin-bottom: 5px;
+    }
+    .summary-item p {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+    .marks-list {
+        background: var(--card-gray);
+        border: 1px solid #222;
+        border-radius: 20px;
+        padding: 30px;
+    }
+    .marks-list h3 {
+        color: #fff;
+        margin-bottom: 20px;
+    }
+    .mark-card {
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+    }
+    .mark-card:hover {
+        border-color: var(--accent-green);
+        box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
+    }
+    .mark-info h4 {
+        color: #fff;
+        margin-bottom: 5px;
+    }
+    .mark-info p {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+    .mark-score {
+        text-align: center;
+    }
+    .mark-score .score {
+        font-size: 32px;
+        font-weight: bold;
+        color: var(--accent-green);
+    }
+    .mark-score .max {
+        font-size: 16px;
+        color: var(--text-muted);
+    }
+    .mark-percentage {
+        margin-top: 5px;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .mark-percentage.excellent {
+        background: rgba(0, 255, 136, 0.2);
+        color: var(--accent-green);
+    }
+    .mark-percentage.good {
+        background: rgba(0, 150, 255, 0.2);
+        color: #0096ff;
+    }
+    .mark-percentage.average {
+        background: rgba(255, 165, 0, 0.2);
+        color: orange;
+    }
+    .mark-percentage.poor {
+        background: rgba(255, 0, 0, 0.2);
+        color: #ff4444;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    .remarks {
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="header">
+        <h2>📝 My Marks</h2>
+        <p>View your internal marks and performance evaluation</p>
+        {% if student_class %}
+        <div class="class-info">
+            <span>🏫 Class: {{ student_class.name }} | Institution: {{ student_class.institution.name }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if student_marks %}
+    <div class="summary-card">
+        <div class="summary-stats">
+            <div class="summary-item">
+                <h3>{{ total_obtained }}</h3>
+                <p>Total Marks Obtained</p>
+            </div>
+            <div class="summary-item">
+                <h3>{{ total_max }}</h3>
+                <p>Total Maximum Marks</p>
+            </div>
+            <div class="summary-item">
+                <h3>{{ student_marks|length }}</h3>
+                <p>Total Assessments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="marks-list">
+        <h3>Detailed Marks</h3>
+        {% for mark in student_marks %}
+        <div class="mark-card">
+            <div class="mark-info">
+                <h4>{{ mark.section.name }}</h4>
+                <p>
+                    {% if mark.topic %}{{ mark.topic.name }} • {% endif %}
+                    {{ mark.date_assigned|date:"M d, Y" }}
+                </p>
+                {% if mark.remarks %}
+                <div class="remarks">📝 {{ mark.remarks }}</div>
+                {% endif %}
+            </div>
+            <div class="mark-score">
+                <div class="score">{{ mark.marks }}<span class="max">/{{ mark.max_marks }}</span></div>
+                {% with percentage=mark.marks|div:mark.max_marks|mul:100 %}
+                <div class="mark-percentage {% if percentage >= 80 %}excellent{% elif percentage >= 60 %}good{% elif percentage >= 40 %}average{% else %}poor{% endif %}">
+                    {{ percentage|floatformat:1 }}%
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="marks-list">
+        <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <p>No marks assigned yet. Complete quizzes and check back later!</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
